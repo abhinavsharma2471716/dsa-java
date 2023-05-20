@@ -25,7 +25,7 @@ public class diamondPattern {
                 System.out.print(" ");
             }
 
-            //first half, backward loop from i to 1
+            //second half, stars - 2*i-1
             for (j = 1; j <= 2 * i - 1; j++) {
                 System.out.print("*");
             }
