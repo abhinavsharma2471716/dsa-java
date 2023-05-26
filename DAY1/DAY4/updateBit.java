@@ -22,6 +22,6 @@ public class updateBit {
         }
 
         System.out.println(result);
-        
+
     }
 }
