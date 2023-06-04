@@ -14,6 +14,7 @@ public class movextoend2 {
         }
         if(str.charAt(idx) == 'x') {
 
+
             return moveAllX(str, idx+1, count+1);
         } else {
             String nextStr = moveAllX(str, idx+1, count);
