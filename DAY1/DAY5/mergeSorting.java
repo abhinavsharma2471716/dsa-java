@@ -55,7 +55,7 @@ public class mergeSorting {
         conquer(arr,si,mid,ei);
     }
     public static void main(String[] args) {
-        int[] arr = {1,5,2,7,4,8,3};
+        int[] arr = {6,5,2,7,7,8,3};
         int n = arr.length;
         divide(arr,0, n-1);
         for(int i=0;i<n;i++){
