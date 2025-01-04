@@ -1,0 +1,87 @@
+
+Given a string s, return the number of unique palindromes of length three that are a subsequence of s.
+
+Note that even if there are multiple ways to obtain the same subsequence, it is still only counted once.
+
+A palindrome is a string that reads the same forwards and backwards.
+
+A subsequence of a string is a new string generated from the original string with some characters (can be none) deleted without changing the relative order of the remaining characters.
+
+For example, "ace" is a subsequence of "abcde".
+ 
+
+Example 1:
+
+Input: s = "aabca"
+Output: 3
+Explanation: The 3 palindromic subsequences of length 3 are:
+- "aba" (subsequence of "aabca")
+- "aaa" (subsequence of "aabca")
+- "aca" (subsequence of "aabca")
+
+Code : 
+
+Approach 1 : Time Complexity -> O(26*n) -> O(n) Count Letters In-Between
+
+class Solution {
+    public int countPalindromicSubsequence(String s) {
+        Set<Character> letters = new HashSet();
+        for (Character c: s.toCharArray()) {
+            letters.add(c);
+        }
+        
+        int ans = 0;
+        for (Character letter : letters) {
+            int i = -1;
+            int j = 0;
+            
+            for (int k = 0; k < s.length(); k++) {
+                if (s.charAt(k) == letter) {
+                    if (i == -1) {
+                        i = k;
+                    }
+                    
+                    j = k;
+                }
+            }
+            
+            Set<Character> between = new HashSet();
+            for (int k = i + 1; k < j; k++) {
+                between.add(s.charAt(k));
+            }
+            
+            ans += between.size();
+        }
+        
+        return ans;
+    }
+}
+
+Approach 2 : Time Complexity -> O(n) Pre-Compute First and Last Indices
+
+class Solution {
+    public int countPalindromicSubsequence(String s) {
+        int[] first = new int[26];
+        int[] last = new int[26];
+        Arrays.fill(first, -1);     
+        for (int i = 0; i < s.length(); i++) {
+            int curr = s.charAt(i) - 'a';
+            if (first[curr] == - 1) {
+                first[curr] = i;
+            }          
+            last[curr] = i;
+        }       
+        int ans = 0;
+        for (int i = 0; i < 26; i++) {
+            if (first[i] == -1) {
+                continue;
+            }          
+            Set<Character> between = new HashSet();
+            for (int j = first[i] + 1; j < last[i]; j++) {
+                between.add(s.charAt(j));
+            }         
+            ans += between.size();
+        }     
+        return ans;
+    }
+}
