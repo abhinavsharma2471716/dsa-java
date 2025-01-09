@@ -1,0 +1,11 @@
+The process of matching characters sequentially from the beginning aligns perfectly with the concept of a Trie. A Trie is a specialized tree-like data structure designed to handle strings efficiently, especially for operations like prefix searches, word insertions, and word lookups.
+
+Each node in a Trie represents a single character, and the path from the root node to any other node forms a prefix or a word.
+
+Usually a Trie is used in two below ways:
+
+Insertion: When inserting a word into the Trie, we start at the root and traverse down the tree, creating new nodes for each character of the word if they don't already exist. At the end of the word, we mark the final node to signify the completion of the word.
+
+Search for a Prefix: To check if a word starts with a given prefix, we simply traverse the Trie following the nodes corresponding to each character of the prefix. If we can traverse all characters successfully, the prefix exists in the Trie.
+
+What makes Tries particularly powerful is their ability to efficiently handle prefix-based operations. Think about how you use autocomplete on your phone - as you type each character, it quickly suggests words that start with those letters. Tries are thus a natural choice for problems involving prefixes or auto-completion. By structuring the characters hierarchically, they allow for fast and intuitive access to any subset of stored strings.
