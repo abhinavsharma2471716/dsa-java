@@ -1,0 +1,92 @@
+Given a string s and an integer k, return true if you can use all the characters in s to construct k palindrome strings or false otherwise.
+
+ 
+
+Example 1:
+
+Input: s = "annabelle", k = 2
+Output: true
+Explanation: You can construct two palindromes using all characters in s.
+Some possible constructions "anna" + "elble", "anbna" + "elle", "anellena" + "b"
+Example 2:
+
+Input: s = "leetcode", k = 3
+Output: false
+Explanation: It is impossible to construct 3 palindromes using all the characters of s.
+Example 3:
+
+Input: s = "true", k = 4
+Output: true
+Explanation: The only possible solution is to put each character in a separate string.
+
+ palindrome is a string that reads the same forward and backward, showing symmetry with respect to its center. For example, the string "babac" can form 5 palindromic groupings, such as:
+
+1 part: "bacab"
+2 parts: "aca" + "bb"
+3 parts: "aa" + "bb" + "c"
+4 parts: "aa" + "b" + "b" + "c"
+5 parts: "a" + "a" + "b" + "b" + "c"
+In order to approach this problem, we need to understand the properties of palindromes, especially how character frequencies determine if a string can be rearranged into a palindrome. The key properties are:
+
+Single Character Strings: Any string of length 1 is a palindrome. For example, the string "a" is a palindrome.
+Even Frequency Characters: A palindrome can have characters that all appear an even number of times, which allows them to form symmetric halves around the center. For example, "aabb" can form the palindrome "abba".
+One Odd Frequency Character: A palindrome can have exactly one character with an odd frequency, which will sit at the center of the string, with the other characters forming symmetric halves. For example, "abcba" has the center "c" and symmetric halves "ab" and "ba".
+Knowing this, we can determine whether forming exactly k palindromes is possible by analyzing the frequencies of the characters within the string.
+
+
+
+Approach 1:
+
+class Solution {
+    public boolean canConstruct(String s, int k) {
+        int n = s.length();
+        if(n<k){
+            return false;
+        }
+        int[] freq = new int[26];
+        for(char c: s.toCharArray()){
+            freq[c-'a']++;
+        }
+
+        int oddCounts = 0;
+        for(int i=0;i<26;i++){
+            if(freq[i] % 2 != 0){
+                oddCounts++;
+                if(oddCounts > k){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+Approach 2:
+
+class Solution {
+
+    public boolean canConstruct(String s, int k) {
+        // Handle edge cases
+        if (s.length() < k) return false;
+        if (s.length() == k) return true;
+
+        // Initialize frequency array and oddCount
+        int[] freq = new int[26];
+        int oddCount = 0;
+
+        // Increment the value of the index corresponding to the current character
+        for (char chr : s.toCharArray()) {
+            freq[chr - 'a']++;
+        }
+
+        // Count the number of characters that appear an odd number of times in s
+        for (int count : freq) {
+            if (count % 2 == 1) {
+                oddCount++;
+            }
+        }
+
+        // Return if the number of odd frequencies is less than or equal to k
+        return oddCount <= k;
+    }
+}
