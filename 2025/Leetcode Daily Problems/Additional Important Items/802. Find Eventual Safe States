@@ -1,0 +1,101 @@
+Kahn's Algorithm:
+Kahn's algorithm is a topological sorting algorithm that works for Directed Acyclic Graphs (DAGs). It uses a queue-based BFS approach to process nodes with zero indegree. The algorithm repeatedly removes nodes with zero indegree from the graph and reduces the indegree of their neighbors. If a graph has no cycles, the result will be a valid topological order.
+
+Steps of Kahn's Algorithm:
+Calculate Indegree: For each node, count the number of incoming edges.
+Initialize Queue: Add all nodes with zero indegree to the queue.
+Process Queue: While the queue is not empty:
+Remove a node from the queue (process it).
+Add it to the result (topological order or processed nodes).
+For each neighbor of the removed node, reduce its indegree by 1.
+If any neighbor's indegree becomes zero, add it to the queue.
+Handle Cycles: If all nodes are processed, the graph is a DAG. Otherwise, there are cycles.
+Application to the Problem:
+In this problem, we are finding safe nodes in a directed graph. Safe nodes are nodes that cannot lead to cycles in any path, which is equivalent to nodes in a reversed topological order. Here’s how Kahn’s algorithm can be applied:
+
+Reverse the Graph: Reverse the edges in the graph to process nodes based on their influence.
+Calculate Indegree: Compute the indegree of each node in the reversed graph.
+Initialize Queue: Add all terminal nodes (nodes with zero indegree in the reversed graph) to the queue.
+Process the Graph:
+Remove a node from the queue.
+Add it to the list of safe nodes.
+For each neighbor in the reversed graph, reduce its indegree by 1.
+If a neighbor’s indegree becomes zero, add it to the queue.
+Sort the Result: The nodes in the result list are safe nodes. Sort them to meet the problem’s requirements.
+
+There is a directed graph of n nodes with each node labeled from 0 to n - 1. The graph is represented by a 0-indexed 2D integer array graph where graph[i] is an integer array of nodes adjacent to node i, meaning there is an edge from node i to each node in graph[i].
+
+A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node (or another safe node).
+
+Return an array containing all the safe nodes of the graph. The answer should be sorted in ascending order.
+
+ 
+
+Example 1:
+
+Illustration of graph
+Input: graph = [[1,2],[2,3],[5],[0],[5],[],[]]
+Output: [2,4,5,6]
+Explanation: The given graph is shown above.
+Nodes 5 and 6 are terminal nodes as there are no outgoing edges from either of them.
+Every path starting at nodes 2, 4, 5, and 6 all lead to either node 5 or 6.
+Example 2:
+
+Input: graph = [[1,2,3,4],[1,2],[3,4],[0,4],[]]
+Output: [4]
+Explanation:
+Only node 4 is a terminal node, and every path starting at node 4 leads to node 4.
+ 
+
+Constraints:
+
+n == graph.length
+1 <= n <= 104
+0 <= graph[i].length <= n
+0 <= graph[i][j] <= n - 1
+graph[i] is sorted in a strictly increasing order.
+The graph may contain self-loops.
+The number of edges in the graph will be in the range [1, 4 * 104].
+
+Code :
+
+class Solution {
+    public List<Integer> eventualSafeNodes(int[][] graph) {
+        int n = graph.length;
+        List<Integer> result = new ArrayList<>();
+        // Create a reverse graph
+        List<List<Integer>> reverseGraph = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            reverseGraph.add(new ArrayList<>());
+        }       
+        // Track indegree (number of incoming edges) for each node
+        int[] indegree = new int[n];
+        for (int i = 0; i < n; i++) {
+            for (int neighbor : graph[i]) {
+                reverseGraph.get(neighbor).add(i);
+                indegree[i]++;
+            }
+        }        
+        // Start with nodes having no outgoing edges (indegree == 0 in the reverse graph)
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            if (indegree[i] == 0) {
+                queue.add(i);
+            }
+        }      
+        // Process the nodes in the reverse graph
+        while (!queue.isEmpty()) {
+            int node = queue.poll();
+            result.add(node);
+            for (int neighbor : reverseGraph.get(node)) {
+                indegree[neighbor]--;
+                if (indegree[neighbor] == 0) {
+                    queue.add(neighbor);
+                }
+            }
+        }     
+        // Sort the result to return nodes in ascending order
+        Collections.sort(result);
+        return result;
+    }
+}
