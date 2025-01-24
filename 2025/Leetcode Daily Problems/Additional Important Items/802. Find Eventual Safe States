@@ -1,4 +1,4 @@
-Kahn's Algorithm:
+Kahn's Algorithm:-
 Kahn's algorithm is a topological sorting algorithm that works for Directed Acyclic Graphs (DAGs). It uses a queue-based BFS approach to process nodes with zero indegree. The algorithm repeatedly removes nodes with zero indegree from the graph and reduces the indegree of their neighbors. If a graph has no cycles, the result will be a valid topological order.
 
 Steps of Kahn's Algorithm:
