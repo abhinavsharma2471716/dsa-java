@@ -1,0 +1,99 @@
+02"
+
+Output: true
+
+Explanation:
+
+Initially, s = "3902"
+First operation:
+(s[0] + s[1]) % 10 = (3 + 9) % 10 = 2
+(s[1] + s[2]) % 10 = (9 + 0) % 10 = 9
+(s[2] + s[3]) % 10 = (0 + 2) % 10 = 2
+s becomes "292"
+Second operation:
+(s[0] + s[1]) % 10 = (2 + 9) % 10 = 1
+(s[1] + s[2]) % 10 = (9 + 2) % 10 = 1
+s becomes "11"
+Since the digits in "11" are the same, the output is true.
+Example 2:
+
+Input: s = "34789"
+
+Output: false
+
+Explanation:
+
+Initially, s = "34789".
+After the first operation, s = "7157".
+After the second operation, s = "862".
+After the third operation, s = "48".
+Since '4' != '8', the output is false.
+ 
+
+Constraints:
+
+3 <= s.length <= 105
+s consists of only digits.
+
+Code:
+
+class Solution {
+    
+    // Method to check if the computed values have the same last digit
+    public boolean hasSameDigits(String s) {
+        int length = s.length();
+        int limit = length - 2;
+        int sum1 = 0, sum2 = 0;
+
+        // Iterate over the string and compute the values
+        for (int j = 0; j <= limit; j++) {
+            int coefficient = binomMod10(limit, j);
+            
+            sum1 = (sum1 + coefficient * (s.charAt(j) - '0')) % 10;
+            sum2 = (sum2 + coefficient * (s.charAt(j + 1) - '0')) % 10;
+        }
+
+        return sum1 == sum2;
+    }
+
+    // Computes the binomial coefficient modulo 10
+    private int binomMod10(int n, int k) {
+        int mod2 = binomMod2(n, k);
+        int mod5 = binomMod5(n, k);
+
+        // Find a number x such that x mod 2 == mod2 and x mod 5 == mod5
+        for (int x = 0; x < 10; x++) {
+            if (x % 2 == mod2 && x % 5 == mod5) {
+                return x;
+            }
+        }
+
+        return 0;
+    }
+
+    // Computes the binomial coefficient modulo 2
+    private int binomMod2(int n, int k) {
+        return ((n & k) == k) ? 1 : 0;
+    }
+
+    // Computes the binomial coefficient modulo 5
+    private int binomMod5(int n, int k) {
+        int[][] pascalTriangle = {
+            {1}, {1, 1}, {1, 2, 1}, {1, 3, 3, 1}, {1, 4, 1, 4, 1}
+        };
+        int result = 1;
+
+        while (n > 0 || k > 0) {
+            int nd = n % 5;
+            int kd = k % 5;
+
+            if (kd > nd) return 0;
+
+            result = (result * pascalTriangle[nd][kd]) % 5;
+            n /= 5;
+            k /= 5;
+        }
+
+        return result;
+    }
+}
