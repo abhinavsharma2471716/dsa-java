@@ -1,0 +1,214 @@
+You are given an integer n. There is an undirected graph with n vertices, numbered from 0 to n - 1. You are given a 2D integer array edges where edges[i] = [ai, bi] denotes that there exists an undirected edge connecting vertices ai and bi.
+
+Return the number of complete connected components of the graph.
+
+A connected component is a subgraph of a graph in which there exists a path between any two vertices, and no vertex of the subgraph shares an edge with a vertex outside of the subgraph.
+
+A connected component is said to be complete if there exists an edge between every pair of its vertices.
+
+ 
+
+Example 1:
+
+
+
+Input: n = 6, edges = [[0,1],[0,2],[1,2],[3,4]]
+Output: 3
+Explanation: From the picture above, one can see that all of the components of this graph are complete.
+Example 2:
+
+
+
+Input: n = 6, edges = [[0,1],[0,2],[1,2],[3,4],[3,5]]
+Output: 1
+Explanation: The component containing vertices 0, 1, and 2 is complete since there is an edge between every pair of two vertices. On the other hand, the component containing vertices 3, 4, and 5 is not complete since there is no edge between vertices 4 and 5. Thus, the number of complete components in this graph is 1.
+ 
+
+Constraints:
+
+1 <= n <= 50
+0 <= edges.length <= n * (n - 1) / 2
+edges[i].length == 2
+0 <= ai, bi <= n - 1
+ai != bi
+There are no repeated edges.
+
+3 Approaches :
+
+DFS:->
+
+class Solution {
+    public int countCompleteComponents(int n, int[][] edges) {
+        boolean[] visited = new boolean[n];
+        List<List<Integer>> list = new ArrayList<>();
+        
+        // Initialize adjacency list
+        for (int i = 0; i < n; i++) {
+            list.add(new ArrayList<>());
+        }
+
+        // Build adjacency list
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+
+            list.get(u).add(v);
+            list.get(v).add(u);
+        }
+
+        int completeCount = 0;
+
+        // DFS traversal
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                List<Integer> component = new ArrayList<>();
+                dfs(i, list, visited, component);
+
+                // Count edges in this component
+                int edgeCount = 0;
+                for (int node : component) {
+                    edgeCount += list.get(node).size();
+                }
+                edgeCount /= 2; // Each edge is counted twice in an undirected graph
+
+                // Check if the component is complete
+                int vertexCount = component.size();
+                int expectedEdges = (vertexCount * (vertexCount - 1)) / 2;
+                if (edgeCount == expectedEdges) {
+                    completeCount++;
+                }
+            }
+        }
+        return completeCount;
+    }
+
+    private void dfs(int node, List<List<Integer>> list, boolean[] visited, List<Integer> component) {
+        visited[node] = true;
+        component.add(node);
+
+        for (int neighbor : list.get(node)) {
+            if (!visited[neighbor]) {
+                dfs(neighbor, list, visited, component);
+            }
+        }
+    }
+}
+
+2) Approach :
+
+BFS:
+
+class Solution {
+    public int countCompleteComponents(int n, int[][] edges) {
+        boolean[] visited = new boolean[n];
+        List<List<Integer>> list = new ArrayList<>();        
+        // Initialize adjacency list
+        for (int i = 0; i < n; i++) {
+            list.add(new ArrayList<>());
+        }
+        // Build adjacency list
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+            list.get(u).add(v);
+            list.get(v).add(u);
+        }
+        int completeCount = 0;
+        // DFS traversal
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                List<Integer> component = new ArrayList<>();
+                bfs(i, list, visited, component);
+                // Count edges in this component
+                int edgeCount = 0;
+                for (int node : component) {
+                    edgeCount += list.get(node).size();
+                }
+                edgeCount /= 2; // Each edge is counted twice in an undirected graph
+                // Check if the component is complete
+                int vertexCount = component.size();
+                int expectedEdges = (vertexCount * (vertexCount - 1)) / 2;
+                if (edgeCount == expectedEdges) {
+                    completeCount++;
+                }
+            }
+        }
+        return completeCount;
+    }
+private void bfs(int node, List<List<Integer>> list, boolean[] visited, List<Integer> component) {
+         Queue<Integer> queue = new LinkedList<>();
+        queue.offer(node);
+        visited[node] = true;
+
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+            component.add(curr);
+
+            for (int neighbor : list.get(curr)) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    queue.offer(neighbor);
+                }
+            }
+        }
+    }
+}
+
+
+3) DSU (Union Find)
+
+class Solution {
+    public int countCompleteComponents(int n, int[][] edges) {
+        int[] parent = new int[n];
+        int[] size = new int[n];        
+        // Initialize DSU
+        for (int i = 0; i < n; i++) {
+            parent[i] = i; // Each node is its own parent initially
+            size[i] = 1;    // Initial component size is 1
+        }
+        // Perform union operation for each edge
+        for (int[] edge : edges) {
+            union(edge[0], edge[1], parent, size);
+        }
+        // Count edges in each component
+        Map<Integer, Integer> edgeCount = new HashMap<>();
+        for (int[] edge : edges) {
+            int root = find(edge[0], parent);
+            edgeCount.put(root, edgeCount.getOrDefault(root, 0) + 1);
+        }
+        // Check if each component is complete
+        int completeCount = 0;
+        for (int i = 0; i < n; i++) {
+            if (find(i, parent) == i) { // If node is a root
+                int vertexCount = size[i];  // Number of nodes in the component
+                int expectedEdges = (vertexCount * (vertexCount - 1)) / 2; // Formula for complete graph edges
+                if (edgeCount.getOrDefault(i, 0) == expectedEdges) {
+                    completeCount++;
+                }
+            }
+        }
+        return completeCount;
+    }
+    // Find with path compression
+    private int find(int x, int[] parent) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x], parent);
+        }
+        return parent[x];
+    }
+    // Union by size
+    private void union(int a, int b, int[] parent, int[] size) {
+        int rootA = find(a, parent);
+        int rootB = find(b, parent);
+        if (rootA != rootB) {
+            if (size[rootA] > size[rootB]) {
+                parent[rootB] = rootA;
+                size[rootA] += size[rootB];
+            } else {
+                parent[rootA] = rootB;
+                size[rootB] += size[rootA];
+            }
+        }
+    }
+}
+
