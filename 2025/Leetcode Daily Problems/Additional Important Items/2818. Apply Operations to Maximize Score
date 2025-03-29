@@ -181,21 +181,18 @@ First, we need an efficient way to calculate the prime score of a number n. To d
 
 Now, notice that a number remains dominant until another element with a greater prime score appears either to its left or right. To efficiently determine this region, we use a monotonic decreasing stack, which helps identify the nearest elements with a higher prime score on both sides.
 
-To better understand monotonic stacks, you can try solving Next Greater Element I first. It’s a great prerequisite for this problem!
-
 A monotonic stack is a data structure that maintains a specific order as elements are inserted. In this case, we need a monotonically decreasing stack based on prime scores, meaning each new element can only be added if it has a lower prime score than the one at the top. If the top element has a greater prime score, we pop it from the stack. When the current element causes another to be popped, it means it is the first element with a higher prime score to the right. Conversely, if we reach an element in the stack with a greater prime score than the current one, that element is the first with a higher prime score to the left.
 
-Current
+
 
 After finding the indices of the nearest elements with a higher prime score on the left and right, prevDominant[i] and nextDominant[i], we can compute the number of subarrays in which the i-th element is dominant.
 
 For the left boundary, we have i - prevDominant[i] choices, and for each of them, we have nextDominant[i] - i choices for the right boundary. This gives a total of: (i - prevDominant[i]) * (nextDominant[i] - i) subarrays, where the i-th element is dominant.
 
-Visual Representation of All Valid Subarrays
+
 
 Finally, we need an efficient way to determine the next element on which we will apply operations across all subarrays where it is dominant. Since we need to process elements in decreasing order to maximize the score, a priority queue (max-heap) is a useful data structure. It allows us to quickly extract the largest element and then remove it to move on to the next one.
 
-If you need a refresher on heaps, check out the Heap Explore Card to review their functionality and common patterns.
 
 To sum up, the algorithm follows these steps:
 
