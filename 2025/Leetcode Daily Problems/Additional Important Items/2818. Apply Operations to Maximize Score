@@ -144,7 +144,7 @@ class Solution {
     }
 
     // Helper function to compute the power of a number modulo MOD
-    //// Calculate the exponentiation using binary exponentiation
+    //// Calculate the exponentiation using binary exponentiation 
       private long power(long base, long exponent) {
         if (exponent == 0) return 1;
         long half = power(base, exponent / 2);
