@@ -1,0 +1,88 @@
+Given an integer array nums, return true if you can partition the array into two subsets such that the sum of the elements in both subsets is equal or false otherwise.
+
+ 
+
+Example 1:
+
+Input: nums = [1,5,11,5]
+Output: true
+Explanation: The array can be partitioned as [1, 5, 5] and [11].
+Example 2:
+
+Input: nums = [1,2,3,5]
+Output: false
+Explanation: The array cannot be partitioned into equal sum subsets.
+ 
+
+Constraints:
+
+1 <= nums.length <= 200
+1 <= nums[i] <= 100
+
+Code:
+
+Approach 1 : Recursion + Memo
+
+class Solution {
+    public boolean canPartition(int[] nums) {
+        int totalSum = 0;
+        for (int num : nums) {
+            totalSum += num;
+        }
+
+        if (totalSum % 2 != 0) {
+            return false;
+        }
+
+        int target = totalSum / 2;
+        Boolean[][] memo = new Boolean[nums.length][target + 1];
+        return canPartitionRecursive(nums, 0, target, memo);
+    }
+
+    private boolean canPartitionRecursive(int[] nums, int index, int target, Boolean[][] memo) {
+        if (target == 0) return true;
+        if (index >= nums.length || target < 0) return false;
+
+        if (memo[index][target] != null) {
+            return memo[index][target];
+        }
+
+        // Include current element
+        if (canPartitionRecursive(nums, index + 1, target - nums[index], memo)) {
+            memo[index][target] = true;
+            return true;
+        }
+
+        // Exclude current element
+        memo[index][target] = canPartitionRecursive(nums, index + 1, target, memo);
+        return memo[index][target];
+    }
+}
+
+
+Approach 2: 1D DP
+
+class Solution {
+    public boolean canPartition(int[] nums) {
+        int totalSum = 0;
+        for (int num : nums) {
+            totalSum += num;
+        }
+
+        if (totalSum % 2 != 0) {
+            return false;
+        }
+
+        int target = totalSum / 2;
+        boolean[] dp = new boolean[target + 1];
+        dp[0] = true;
+
+        for (int num : nums) {
+            for (int j = target; j >= num; j--) {
+                dp[j] = dp[j] || dp[j - num];
+            }
+        }
+
+        return dp[target];
+    }
+}
