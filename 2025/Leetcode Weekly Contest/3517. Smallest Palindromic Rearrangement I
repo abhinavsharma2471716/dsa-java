@@ -1,0 +1,80 @@
+You are given a palindromic string s.
+
+Return the lexicographically smallest palindromic permutation of s.
+
+ 
+
+Example 1:
+
+Input: s = "z"
+
+Output: "z"
+
+Explanation:
+
+A string of only one character is already the lexicographically smallest palindrome.
+
+Example 2:
+
+Input: s = "babab"
+
+Output: "abbba"
+
+Explanation:
+
+Rearranging "babab" → "abbba" gives the smallest lexicographic palindrome.
+
+Example 3:
+
+Input: s = "daccad"
+
+Output: "acddca"
+
+Explanation:
+
+Rearranging "daccad" → "acddca" gives the smallest lexicographic palindrome.
+
+ 
+
+Constraints:
+
+1 <= s.length <= 105
+s consists of lowercase English letters.
+s is guaranteed to be palindromic.
+
+Code:
+
+class Solution {
+    public String smallestPalindrome(String s) {
+        int n = s.length();
+        int[] freq = new int[26];
+        for (char c : s.toCharArray()) {
+            freq[c - 'a']++;
+        }
+        StringBuilder middle = new StringBuilder();
+        StringBuilder start = new StringBuilder();
+        
+
+        // Build the first start and determine the middle character if needed
+        for (int i = 0; i < 26; i++) {
+            int count = freq[i];
+
+            for (int j = 0; j < count / 2; j++) {
+                start.append((char) (i + 'a'));
+            }
+            if (count % 2 != 0) {
+                middle.append((char) (i + 'a'));
+                count--;
+            }
+
+        }
+
+        // Build the final palindrome
+        StringBuilder answer = new StringBuilder();
+        answer.append(start);
+        answer.append(middle);
+        answer.append(start.reverse());
+
+        return answer.toString();
+    }
+}
