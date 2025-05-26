@@ -1,0 +1,101 @@
+There is a directed graph of n colored nodes and m edges. The nodes are numbered from 0 to n - 1.
+
+You are given a string colors where colors[i] is a lowercase English letter representing the color of the ith node in this graph (0-indexed). You are also given a 2D array edges where edges[j] = [aj, bj] indicates that there is a directed edge from node aj to node bj.
+
+A valid path in the graph is a sequence of nodes x1 -> x2 -> x3 -> ... -> xk such that there is a directed edge from xi to xi+1 for every 1 <= i < k. The color value of the path is the number of nodes that are colored the most frequently occurring color along that path.
+
+Return the largest color value of any valid path in the given graph, or -1 if the graph contains a cycle.
+
+ 
+
+Example 1:
+
+
+
+Input: colors = "abaca", edges = [[0,1],[0,2],[2,3],[3,4]]
+Output: 3
+Explanation: The path 0 -> 2 -> 3 -> 4 contains 3 nodes that are colored "a" (red in the above image).
+Example 2:
+
+
+
+Input: colors = "a", edges = [[0,0]]
+Output: -1
+Explanation: There is a cycle from 0 to 0.
+ 
+
+Constraints:
+
+n == colors.length
+m == edges.length
+1 <= n <= 105
+0 <= m <= 105
+colors consists of lowercase English letters.
+0 <= aj, bj < n
+
+
+Code :
+T.C. :-
+O(n+e+26e)=O(n+e)
+👉 Since 26 is a constant (number of lowercase letters), it doesn’t affect the asymptotic complexity.
+
+The overall time complexity is O(n + e), where n is the number of nodes and e is the number of edges. Building the adjacency list and indegree array takes O(e) time. During the BFS-based topological sort, each node is processed once (O(n)), and each edge is traversed once while updating a fixed-size color frequency array (26 letters), which still results in O(e) time. Since 26 is constant, it doesn’t affect the overall complexity, keeping it linear in terms of nodes and edges.
+
+
+class Solution {
+    public int largestPathValue(String colors, int[][] edges) {
+        int n = colors.length();
+        List<List<Integer>> adj = new ArrayList<>();
+        int[] indegree = new int[n];
+
+        // Initialize adjacency list
+        for (int i = 0; i < n; ++i)
+            adj.add(new ArrayList<>());
+
+        // Build graph and indegree
+        for (int[] edge : edges) {
+            int u = edge[0], v = edge[1];
+            adj.get(u).add(v);
+            indegree[v]++;
+        }
+
+        // Color frequency table for each node (26 letters)
+        int[][] colorCount = new int[n][26];
+        Queue<Integer> queue = new LinkedList<>();
+
+        // Add nodes with 0 indegree to queue
+        for (int i = 0; i < n; ++i) {
+            if (indegree[i] == 0) {
+                queue.offer(i);
+                colorCount[i][colors.charAt(i) - 'a'] = 1;
+            }
+        }
+
+        int answer = 0;
+        int processedNodes = 0;
+
+        while (!queue.isEmpty()) {
+            int u = queue.poll();
+            processedNodes++;
+
+            // Update answer with max color frequency at node u
+            for (int c = 0; c < 26; ++c){
+                answer = Math.max(answer, colorCount[u][c]);
+            }
+
+            for (int v : adj.get(u)) {
+                for (int c = 0; c < 26; ++c) {
+                    int add = (colors.charAt(v) - 'a' == c) ? 1 : 0;
+                    colorCount[v][c] = Math.max(colorCount[v][c], colorCount[u][c] + add);
+                }
+
+                indegree[v]--;
+                if (indegree[v] == 0)
+                    queue.offer(v);
+            }
+        }
+
+        // If not all nodes are processed, there is a cycle
+        return processedNodes < n ? -1 : answer;
+    }
+}
