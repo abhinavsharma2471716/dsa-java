@@ -1,0 +1,78 @@
+You are given a string s consisting of lowercase English letters.
+
+You must repeatedly perform the following operation while the string s has at least two consecutive characters:
+
+Remove the leftmost pair of adjacent characters in the string that are consecutive in the alphabet, in either order (e.g., 'a' and 'b', or 'b' and 'a').
+Shift the remaining characters to the left to fill the gap.
+Return the resulting string after no more operations can be performed.
+
+Note: Consider the alphabet as circular, thus 'a' and 'z' are consecutive.
+
+ 
+
+Example 1:
+
+Input: s = "abc"
+
+Output: "c"
+
+Explanation:
+
+Remove "ab" from the string, leaving "c" as the remaining string.
+No further operations are possible. Thus, the resulting string after all possible removals is "c".
+Example 2:
+
+Input: s = "adcb"
+
+Output: ""
+
+Explanation:
+
+Remove "dc" from the string, leaving "ab" as the remaining string.
+Remove "ab" from the string, leaving "" as the remaining string.
+No further operations are possible. Thus, the resulting string after all possible removals is "".
+Example 3:
+
+Input: s = "zadb"
+
+Output: "db"
+
+Explanation:
+
+Remove "za" from the string, leaving "db" as the remaining string.
+No further operations are possible. Thus, the resulting string after all possible removals is "db".
+ 
+
+Constraints:
+
+1 <= s.length <= 105
+s consists only of lowercase English letters.
+
+Code :
+
+class Solution {
+    public int longestPalindrome(String[] words) {
+        Map<String, Integer> map = new HashMap<>();
+        int length = 0;
+        boolean centralUsed = false;
+
+        for (String word : words) {
+            String reverse = new StringBuilder(word).reverse().toString();
+            if (map.getOrDefault(reverse, 0) > 0) {
+                length += 4; // "ab" + "ba" or "lc" + "cl"
+                map.put(reverse, map.get(reverse) - 1);
+            } else {
+                map.put(word, map.getOrDefault(word, 0) + 1);
+            }
+        }
+
+        for (String key : map.keySet()) {
+            if (key.charAt(0) == key.charAt(1) && map.get(key) > 0) {
+                length += 2; // Use one central palindrome like "gg"
+                break; // Only one such central word is allowed
+            }
+        }
+
+        return length;
+    }
+}
