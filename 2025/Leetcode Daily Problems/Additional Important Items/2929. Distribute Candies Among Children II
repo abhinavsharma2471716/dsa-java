@@ -1,0 +1,135 @@
+You are given two positive integers n and limit.
+
+Return the total number of ways to distribute n candies among 3 children such that no child gets more than limit candies.
+
+ 
+
+Example 1:
+
+Input: n = 5, limit = 2
+Output: 3
+Explanation: There are 3 ways to distribute 5 candies such that no child gets more than 2 candies: (1, 2, 2), (2, 1, 2) and (2, 2, 1).
+Example 2:
+
+Input: n = 3, limit = 3
+Output: 10
+Explanation: There are 10 ways to distribute 3 candies such that no child gets more than 3 candies: (0, 0, 3), (0, 1, 2), (0, 2, 1), (0, 3, 0), (1, 0, 2), (1, 1, 1), (1, 2, 0), (2, 0, 1), (2, 1, 0) and (3, 0, 0).
+ 
+
+Constraints:
+
+1 <= n <= 106
+1 <= limit <= 106
+
+Code :
+
+Approach 1: Enumeration
+Intuition
+We enumerate the number of candies, x, given to the first child. Then, there are n−x candies left. At this point, we consider two scenarios:
+
+If n−x>limit×2, then at least one of the remaining two children must receive more than limit candies. In this case, there is no valid distribution.
+
+If n−x≤limit×2, then for the second child, they must receive at least max(0,n−x−limit) candies to ensure the third child does not receive more than limit candies. At the same time, they can receive at most min(limit,n−x) candies.
+
+For the second case, we can count all valid distributions.
+
+Time complexity: O(min(limit,n)).
+
+We iterate over all possible values of candies that can be given to the first child, which ranges from 0 to min(limit,n). For each such value, we perform constant-time calculations.
+
+Space complexity: O(1).
+
+Only a few additional variables are needed.
+
+class Solution {
+
+    public long distributeCandies(int n, int limit) {
+        long ans = 0;
+        for (int i = 0; i <= Math.min(limit, n); i++) {
+            if (n - i > 2 * limit) {
+                continue;
+            }
+            ans += Math.min(n - i, limit) - Math.max(0, n - i - limit) + 1;
+        }
+        return ans;
+    }
+}
+
+
+
+Approach 2: Inclusion-Exclusion Principle
+
+🔍 Intuition
+We apply a classical counting method:
+
+Start by computing the total number of distributions without any restrictions.
+
+Then, subtract the number of invalid distributions where the limit condition is violated.
+
+Use the Inclusion-Exclusion Principle to ensure we don't overcount or undercount.
+
+🧮 Steps
+Total Unrestricted Distributions
+Distributing n candies to 3 children is equivalent to placing 2 dividers between candies.
+Using stars and bars, the total combinations are:
+
+Total
+
+Total=C(n+2,2)
+Subtract Cases with At Least One Child Exceeding Limit
+Fix one child to get more than limit candies (i.e., limit + 1 or more).
+Distribute the remaining candies among 3 children (with repetitions allowed).
+Since any of the 3 children can exceed the limit:
+
+Subtract
+
+Subtract=3×C(n−(limit+1)+2,2)
+Add Back Cases Where At Least Two Children Exceed Limit
+We subtracted some cases multiple times — specifically when two children exceeded the limit.
+Add them back. Number of ways to choose 2 children: 3
+
+Add Back
+
+Add Back=3×C(n−2×(limit+1)+2,2)
+Subtract Cases Where All Three Children Exceed Limit
+These were added back too many times in the previous step, so we subtract once:
+
+Subtract
+
+Subtract=C(n−3×(limit+1)+2,2)
+🧾 Final Formula
+
+C(n+2,2)−3×C(n−(limit+1)+2,2)+3×C(n−2×(limit+1)+2,2)−C(n−3×(limit+1)+2,2)
+​
+ 
+
+
+Complexity Analysis
+Time complexity: O(1).
+
+The result can be calculated directly.
+
+Space complexity: O(1).
+
+Only a few additional variables are needed.
+
+
+​
+class Solution {
+
+    public long distributeCandies(int n, int limit) {
+        return (
+            cal(n + 2) -
+            3 * cal(n - limit + 1) +
+            3 * cal(n - (limit + 1) * 2 + 2) -
+            cal(n - 3 * (limit + 1) + 2)
+        );
+    }
+
+    public long cal(int x) {
+        if (x < 0) {
+            return 0;
+        }
+        return ((long) x * (x - 1)) / 2;
+    }
+}
