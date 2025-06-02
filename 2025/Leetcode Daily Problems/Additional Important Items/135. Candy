@@ -1,0 +1,126 @@
+There are n children standing in a line. Each child is assigned a rating value given in the integer array ratings.
+
+You are giving candies to these children subjected to the following requirements:
+
+Each child must have at least one candy.
+Children with a higher rating get more candies than their neighbors.
+Return the minimum number of candies you need to have to distribute the candies to the children.
+
+ 
+
+Example 1:
+
+Input: ratings = [1,0,2]
+Output: 5
+Explanation: You can allocate to the first, second and third child with 2, 1, 2 candies respectively.
+Example 2:
+
+Input: ratings = [1,2,2]
+Output: 4
+Explanation: You can allocate to the first, second and third child with 1, 2, 1 candies respectively.
+The third child gets 1 candy because it satisfies the above two conditions.
+ 
+
+Constraints:
+
+n == ratings.length
+1 <= n <= 2 * 104
+0 <= ratings[i] <= 2 * 104
+
+
+Code :
+
+Approach 1:
+
+
+class Solution {
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int[] LtoR = new int[n];
+        int[] RtoL = new int[n];
+        Arrays.fill(LtoR, 1);
+        Arrays.fill(RtoL, 1);
+        //First comparing with only left neighbour
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] > ratings[i - 1]) {
+                LtoR[i] = Math.max(LtoR[i], LtoR[i - 1] + 1);
+            }
+        }
+        //Then comparing with only right neighbour
+        for (int i = n - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1]) {
+                RtoL[i] = Math.max(RtoL[i], RtoL[i + 1] + 1);
+            }
+        }
+        int result = 0;
+        for (int i = 0; i < n; i++) {
+            result += Math.max(LtoR[i], RtoL[i]);
+        }
+        return result;
+    }
+}
+
+
+
+Approach 2:
+
+
+class Solution {
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int[] count = new int[n];
+      
+        Arrays.fill(count, 1);
+        Arrays.fill(count, 1);
+        //First comparing with only left neighbour
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] > ratings[i - 1]) {
+                count[i] = Math.max(count[i], count[i - 1] + 1);
+            }
+        }
+        //Then comparing with only right neighbour
+        for (int i = n - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1]) {
+                count[i] = Math.max(count[i], count[i + 1] + 1);
+            }
+        }
+        int result = 0;
+        for (int i = 0; i < n; i++) {
+            result += count[i];
+        }
+        return result;
+    }
+}
+
+
+Approach 3:
+
+class Solution {
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int candy = n; //Each person given one candy
+        int i = 1;
+        while (i < n) {
+            if (ratings[i] == ratings[i - 1]) {
+                i++;
+                continue;
+            }
+            //For increasing slope
+            int peak = 0;
+            while (i < n && ratings[i] > ratings[i - 1]) {
+                peak++;
+                candy += peak;
+                i++;
+            }
+            //For decreasing slope
+            int valley = 0;
+            while (i < n && ratings[i] < ratings[i - 1]) {
+                valley++;
+                candy += valley;
+                i++;
+            }
+            candy -= Math.min(peak, valley);
+        }
+        return candy;
+    }
+}
