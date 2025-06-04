@@ -1,0 +1,107 @@
+You are given a string word, and an integer numFriends.
+
+Alice is organizing a game for her numFriends friends. There are multiple rounds in the game, where in each round:
+
+word is split into numFriends non-empty strings, such that no previous round has had the exact same split.
+All the split words are put into a box.
+Find the lexicographically largest string from the box after all the rounds are finished.
+
+ 
+
+Example 1:
+
+Input: word = "dbca", numFriends = 2
+
+Output: "dbc"
+
+Explanation: 
+
+All possible splits are:
+
+"d" and "bca".
+"db" and "ca".
+"dbc" and "a".
+Example 2:
+
+Input: word = "gggg", numFriends = 4
+
+Output: "g"
+
+Explanation: 
+
+The only possible split is: "g", "g", "g", and "g".
+
+ 
+
+Constraints:
+
+1 <= word.length <= 5 * 103
+word consists only of lowercase English letters.
+1 <= numFriends <= word.length
+
+Code :
+
+Approach 1: Enumeration 
+
+Let n be the length of the string word.
+
+Time Complexity: O(n^2)
+
+We need to enumerate all substrings that meet the problem’s conditions. Since there are up to n possible starting indices and for each we may extract a substring of up to O(n) length, the overall time complexity is O(n^2).
+
+class Solution {
+
+    public String answerString(String word, int numFriends) {
+        if (numFriends == 1) {
+            return word;
+        }
+        int n = word.length();
+        String res = "";
+        for (int i = 0; i < n; i++) {
+            String s = word.substring(i, Math.min(i + n - numFriends + 1, n));
+            if (res.compareTo(s) <= 0) {
+                res = s;
+            }
+        }
+        return res;
+    }
+}
+
+
+Approach 2: Two Pointers
+
+Let n be the length of the string word.
+
+Time Complexity: O(n)
+
+The two pointers together traverse at most n characters. Each character is compared only a constant number of times, so the overall time complexity is linear.
+
+class Solution {
+
+    public String lastSubstring(String s) {
+        int i = 0, j = 1, n = s.length();
+        while (j < n) {
+            int k = 0;
+            while (j + k < n && s.charAt(i + k) == s.charAt(j + k)) {
+                k++;
+            }
+            if (j + k < n && s.charAt(i + k) < s.charAt(j + k)) {
+                int t = i;
+                i = j;
+                j = Math.max(j + 1, t + k + 1);
+            } else {
+                j = j + k + 1;
+            }
+        }
+        return s.substring(i);
+    }
+
+    public String answerString(String word, int numFriends) {
+        if (numFriends == 1) {
+            return word;
+        }
+        String last = lastSubstring(word);
+        int n = word.length(), m = last.length();
+        return last.substring(0, Math.min(m, n - numFriends + 1));
+    }
+}
