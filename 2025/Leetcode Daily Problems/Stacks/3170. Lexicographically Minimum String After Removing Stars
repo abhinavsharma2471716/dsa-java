@@ -1,0 +1,81 @@
+You are given a string s. It may contain any number of '*' characters. Your task is to remove all '*' characters.
+
+While there is a '*', do the following operation:
+
+Delete the leftmost '*' and the smallest non-'*' character to its left. If there are several smallest characters, you can delete any of them.
+Return the lexicographically smallest resulting string after removing all '*' characters.
+
+ 
+
+Example 1:
+
+Input: s = "aaba*"
+
+Output: "aab"
+
+Explanation:
+
+We should delete one of the 'a' characters with '*'. If we choose s[3], s becomes the lexicographically smallest.
+
+Example 2:
+
+Input: s = "abc"
+
+Output: "abc"
+
+Explanation:
+
+There is no '*' in the string.
+
+ 
+
+Constraints:
+
+1 <= s.length <= 105
+s consists only of lowercase English letters and '*'.
+The input is generated such that it is possible to delete all '*' characters.
+
+Code :
+
+Let n be the length of the string s, and let ∣Σ∣ be the size of the character set. Since all characters in this problem are lowercase letters, we have ∣Σ∣=26.
+
+Time complexity: O(n×∣Σ∣).
+
+During traversal, whenever we encounter a *, we need to find the smallest character (in lexicographical order) to its left. This requires scanning through all ∣Σ∣ possible character stacks, which takes O(∣Σ∣) time. Since there can be at most n occurrences of *, the total time complexity is O(n×∣Σ∣).
+
+Space complexity: O(n+∣Σ∣).
+
+The space used is O(n+∣Σ∣): we need O(n) space to store the indices of all characters in the string, and O(∣Σ∣) space for maintaining the stacks for each character.
+
+
+
+class Solution {
+
+    public String clearStars(String s) {
+        Deque<Integer>[] cnt = new Deque[26];
+        for (int i = 0; i < 26; i++) {
+            cnt[i] = new ArrayDeque<>();
+        }
+        char[] arr = s.toCharArray();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != '*') {
+                cnt[arr[i] - 'a'].push(i);
+            } else {
+                for (int j = 0; j < 26; j++) {
+                    if (!cnt[j].isEmpty()) {
+                        arr[cnt[j].pop()] = '*';
+                        break;
+                    }
+                }
+            }
+        }
+
+        StringBuilder ans = new StringBuilder();
+        for (char c : arr) {
+            if (c != '*') {
+                ans.append(c);
+            }
+        }
+        return ans.toString();
+    }
+}
