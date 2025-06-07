@@ -40,7 +40,7 @@ s consists of only English lowercase letters.
 
 Code :
 
-Greedy + Stack (LIFO is there for t :- Robot's intellegence :) )
+Greedy + Stack (LIFO is there for t :- Robot's intelligence :) )
 
 Intuition
 We are provided a push sequence of a stack and we need to find the smallest lexicographical pop sequence. Consider the top element c of the stack and the smallest character minCharacter remaining in the string s:
