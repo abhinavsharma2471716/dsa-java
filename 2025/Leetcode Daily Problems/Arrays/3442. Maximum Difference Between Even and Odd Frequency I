@@ -45,7 +45,7 @@ class Solution {
     public int maxDifference(String s) {
         int n = s.length();
         int[] freq = new int[26];
-        for (int c : s.toCharArray()) {
+        for (char c : s.toCharArray()) {
             freq[c - 'a']++;
         }
         int minE = n;
