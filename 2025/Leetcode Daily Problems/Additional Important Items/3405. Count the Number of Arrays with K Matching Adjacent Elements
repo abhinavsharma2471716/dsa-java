@@ -1,0 +1,102 @@
+You are given three integers n, m, k. A good array arr of size n is defined as follows:
+
+Each element in arr is in the inclusive range [1, m].
+Exactly k indices i (where 1 <= i < n) satisfy the condition arr[i - 1] == arr[i].
+Return the number of good arrays that can be formed.
+
+Since the answer may be very large, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+Input: n = 3, m = 2, k = 1
+
+Output: 4
+
+Explanation:
+
+There are 4 good arrays. They are [1, 1, 2], [1, 2, 2], [2, 1, 1] and [2, 2, 1].
+Hence, the answer is 4.
+Example 2:
+
+Input: n = 4, m = 2, k = 2
+
+Output: 6
+
+Explanation:
+
+The good arrays are [1, 1, 1, 2], [1, 1, 2, 2], [1, 2, 2, 2], [2, 1, 1, 1], [2, 2, 1, 1] and [2, 2, 2, 1].
+Hence, the answer is 6.
+Example 3:
+
+Input: n = 5, m = 2, k = 0
+
+Output: 2
+
+Explanation:
+
+The good arrays are [1, 2, 1, 2, 1] and [2, 1, 2, 1, 2]. Hence, the answer is 2.
+ 
+
+Constraints:
+
+1 <= n <= 105
+1 <= m <= 105
+0 <= k <= n - 1
+
+
+Code :
+
+class Solution {
+    // Define the modulo constant
+    static final int MOD = (int) 1e9 + 7;
+    // Maximum size for factorial arrays
+    static final int MX = 100000;
+    // Arrays to store factorial and inverse factorial modulo MOD
+    static long[] fact = new long[MX];
+    static long[] invFact = new long[MX];
+    // Static initializer block to precompute factorials and inverse factorials
+    static {
+        // Precompute factorials
+        fact[0] = 1;
+        for (int i = 1; i < MX; i++) {
+            fact[i] = (fact[i - 1] * i) % MOD;
+        }
+        // Compute inverse factorial using Fermat's little theorem
+        invFact[MX - 1] = qpow(fact[MX - 1], MOD - 2);
+        for (int i = MX - 1; i > 0; i--) {
+            invFact[i - 1] = (invFact[i] * i) % MOD;
+        }
+    }
+    // Function to perform fast exponentiation (x^n % MOD)
+    static long qpow(long x, int n) {
+    if (n == 0) return 1;
+    long half = qpow(x, n / 2);
+    long result = (half * half) % MOD;
+    if (n % 2 == 1) {
+        result = (result * x) % MOD;
+    }
+    return result;
+}
+    // Function to compute nCr % MOD using precomputed factorials
+    long comb(int n, int r) {
+        if (r < 0 || r > n) return 0;
+        return (((fact[n] * invFact[r]) % MOD) * invFact[n - r]) % MOD;
+    }
+    /**
+     * Count the number of arrays of size n where:
+     * - Each element is in [1, m]
+     * - Exactly k adjacent pairs are equal
+     */
+    public int countGoodArrays(int n, int m, int k) {
+        // Formula:
+        // m * C(n-1, k) * (m - 1)^(n - k - 1)
+        long waysToChooseEqualPositions = comb(n - 1, k);
+        long firstSegmentChoices = m;
+        long remainingSegmentChoices = qpow(m - 1, n - k - 1);
+        long result = (waysToChooseEqualPositions * firstSegmentChoices) % MOD;
+        result = (result * remainingSegmentChoices) % MOD;
+        return (int) result;
+    }
+}
