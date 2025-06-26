@@ -1,0 +1,66 @@
+You are given a binary string s and a positive integer k.
+
+Return the length of the longest subsequence of s that makes up a binary number less than or equal to k.
+
+Note:
+
+The subsequence can contain leading zeroes.
+The empty string is considered to be equal to 0.
+A subsequence is a string that can be derived from another string by deleting some or no characters without changing the order of the remaining characters.
+ 
+
+Example 1:
+
+Input: s = "1001010", k = 5
+Output: 5
+Explanation: The longest subsequence of s that makes up a binary number less than or equal to 5 is "00010", as this number is equal to 2 in decimal.
+Note that "00100" and "00101" are also possible, which are equal to 4 and 5 in decimal, respectively.
+The length of this subsequence is 5, so 5 is returned.
+Example 2:
+
+Input: s = "00101001", k = 1
+Output: 6
+Explanation: "000001" is the longest subsequence of s that makes up a binary number less than or equal to 1, as this number is equal to 1 in decimal.
+The length of this subsequence is 6, so 6 is returned.
+ 
+
+Constraints:
+
+1 <= s.length <= 1000
+s[i] is either '0' or '1'.
+1 <= k <= 10^9
+
+Code: Time Complexity :  (O(n))
+
+class Solution {
+    public int longestSubsequence(String s, int k) {
+        int value = 0; // The value of the binary number we are building
+        int count = 0; // Number of characters included in the subsequence
+
+        // Max number of bits we can include without exceeding k
+        int maxBits = (int)(Math.log(k) / Math.log(2)) + 1;
+
+        int n = s.length();
+
+        // Start from the right (least significant bit)
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(n - 1 - i);
+
+            if (ch == '0') {
+                count++; // 0s can be included always
+            } else {
+                // Only include 1s if:
+                
+                // 1. We're within safe bit range
+                // 2. Adding this bit won't exceed k
+                if (i < maxBits && value + (1 << i) <= k) {
+                    value += (1 << i);
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+}
+
