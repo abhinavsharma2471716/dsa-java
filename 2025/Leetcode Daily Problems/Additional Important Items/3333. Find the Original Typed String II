@@ -1,0 +1,111 @@
+Alice is attempting to type a specific string on her computer. However, she tends to be clumsy and may press a key for too long, resulting in a character being typed multiple times.
+
+You are given a string word, which represents the final output displayed on Alice's screen. You are also given a positive integer k.
+
+Return the total number of possible original strings that Alice might have intended to type, if she was trying to type a string of size at least k.
+
+Since the answer may be very large, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+Input: word = "aabbccdd", k = 7
+
+Output: 5
+
+Explanation:
+
+The possible strings are: "aabbccdd", "aabbccd", "aabbcdd", "aabccdd", and "abbccdd".
+
+Example 2:
+
+Input: word = "aabbccdd", k = 8
+
+Output: 1
+
+Explanation:
+
+The only possible string is "aabbccdd".
+
+Example 3:
+
+Input: word = "aaabbb", k = 3
+
+Output: 8
+
+ 
+
+Constraints:
+
+1 <= word.length <= 5 * 105
+word consists only of lowercase English letters.
+1 <= k <= 2000
+
+
+Code :
+
+class Solution {
+
+    private static final int MOD = 1_000_000_007;
+
+    public int possibleStringCount(String word, int k) {
+        int length = word.length();
+        List<Integer> groupFrequencies = new ArrayList<>();
+        
+        // Step 1: Count frequencies of consecutive characters
+        int currentCount = 1;
+        for (int i = 1; i < length; ++i) {
+            if (word.charAt(i) == word.charAt(i - 1)) {
+                currentCount++;
+            } else {
+                groupFrequencies.add(currentCount);
+                currentCount = 1;
+            }
+        }
+        groupFrequencies.add(currentCount); // Add the last group
+
+        // Step 2: Compute total combinations (product of group sizes)
+        long totalWays = 1;
+        for (int freq : groupFrequencies) {
+            totalWays = (totalWays * freq) % MOD;
+        }
+
+        // If total number of groups ≥ k, all combinations are valid
+        if (groupFrequencies.size() >= k) {
+            return (int) totalWays;
+        }
+
+        // Step 3: Use DP to subtract combinations of length < k
+        int[] dp = new int[k]; // dp[i] = number of ways to form original string of length i
+        int[] prefixSum = new int[k]; // prefixSum[i] = prefix sum of dp for optimization
+
+        dp[0] = 1;
+        Arrays.fill(prefixSum, 1);
+
+        for (int freq : groupFrequencies) {
+            int[] newDp = new int[k];
+
+            for (int len = 1; len < k; len++) {
+                newDp[len] = prefixSum[len - 1];
+                if (len - freq - 1 >= 0) {
+                    newDp[len] = (newDp[len] - prefixSum[len - freq - 1] + MOD) % MOD;
+                }
+            }
+
+            // Update prefix sums
+            int[] newPrefixSum = new int[k];
+            newPrefixSum[0] = newDp[0];
+            for (int len = 1; len < k; len++) {
+                newPrefixSum[len] = (newPrefixSum[len - 1] + newDp[len]) % MOD;
+            }
+
+            dp = newDp;
+            prefixSum = newPrefixSum;
+        }
+
+        // Subtract the number of combinations of length < k
+        long validWays = (totalWays - prefixSum[k - 1] + MOD) % MOD;
+        return (int) validWays;
+    }
+}
