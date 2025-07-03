@@ -1,0 +1,94 @@
+Alice and Bob are playing a game. Initially, Alice has a string word = "a".
+
+You are given a positive integer k.
+
+Now Bob will ask Alice to perform the following operation forever:
+
+Generate a new string by changing each character in word to its next character in the English alphabet, and append it to the original word.
+For example, performing the operation on "c" generates "cd" and performing the operation on "zb" generates "zbac".
+
+Return the value of the kth character in word, after enough operations have been done for word to have at least k characters.
+
+Note that the character 'z' can be changed to 'a' in the operation.
+
+ 
+
+Example 1:
+
+Input: k = 5
+
+Output: "b"
+
+Explanation:
+
+Initially, word = "a". We need to do the operation three times:
+
+Generated string is "b", word becomes "ab".
+Generated string is "bc", word becomes "abbc".
+Generated string is "bccd", word becomes "abbcbccd".
+Example 2:
+
+Input: k = 10
+
+Output: "c"
+
+ 
+
+Constraints:
+
+1 <= k <= 500
+
+Code :
+
+Approach 1 :
+
+Time complexity: O(k).
+
+class Solution {
+    public char kthCharacter(int k) {
+        StringBuilder sb = new StringBuilder("a");
+        
+        while (sb.length() < k) {
+            int len = sb.length();
+            for (int i = 0; i < len; i++) {
+                char c = sb.charAt(i);
+                char newChar = (char)(((c - 'a' + 1) % 26) + 'a');
+                sb.append(newChar);
+            }
+        }
+        
+        return sb.charAt(k - 1);
+    }
+}
+
+Approach 2 :
+
+Time complexity: O(logk).
+
+It only depends on the binary digits of k.
+
+Space complexity: O(1).
+
+
+class Solution {
+
+    public char kthCharacter(int k) {
+        int depth = 0;  // how many times we go to the second half (each adds +1 to char)
+        
+        while (k != 1) {
+            // Find the highest power of 2 less than or equal to k
+            int highestBit = 31 - Integer.numberOfLeadingZeros(k);
+            
+            // If k is exactly a power of 2, we want to go one level up
+            if ((1 << highestBit) == k) {
+                highestBit--;
+            }
+            
+            // Move to the second half of the level
+            k -= (1 << highestBit);
+            depth++;
+        }
+        
+        return (char)('a' + depth);
+    }
+}
