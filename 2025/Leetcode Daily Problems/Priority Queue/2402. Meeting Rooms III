@@ -9,7 +9,7 @@ If there are no available rooms, the meeting will be delayed until a room become
 When a room becomes unused, meetings that have an earlier original start time should be given the room.
 Return the number of the room that held the most meetings. If there are multiple rooms, return the room with the lowest number.
 
-A half-closed interval [a, b) is the interval between a and b including a and not including b.
+A half-closed interval [a, b) is the interval between a and b including a and not including b. 
 
  
 
