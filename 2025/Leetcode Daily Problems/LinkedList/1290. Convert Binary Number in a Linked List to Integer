@@ -1,0 +1,65 @@
+Given head which is a reference node to a singly-linked list. The value of each node in the linked list is either 0 or 1. The linked list holds the binary representation of a number.
+
+Return the decimal value of the number in the linked list.
+
+The most significant bit is at the head of the linked list.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,0,1]
+Output: 5
+Explanation: (101) in base 2 = (5) in base 10
+Example 2:
+
+Input: head = [0]
+Output: 0
+ 
+
+Constraints:
+
+The Linked List is not empty.
+Number of nodes will not exceed 30.
+Each node's value is either 0 or 1.
+
+ Code :
+
+Approach - 1 - (O(nlogn))
+
+
+class Solution {
+    public int getDecimalValue(ListNode head) {
+        ListNode curr = head;
+        int len = 0;
+        while(curr != null){
+           len++;
+           curr = curr.next;
+        }
+        curr = head;
+        int res = 0;
+        
+        int i=len-1;
+        while(curr != null){
+           res = res + (int)( Math.pow(2,i) * curr.val );
+           curr = curr.next;
+           i--;
+        }
+        return res;
+    }
+}
+
+
+Approach - 2 (o(n)) -- Single traversal
+
+class Solution {
+    public int getDecimalValue(ListNode head) {
+        int result = 0;
+        while (head != null) {
+            result = (result << 1) | head.val;  // Shift left and add current bit
+            head = head.next;
+        }
+        return result;
+    }
+}
