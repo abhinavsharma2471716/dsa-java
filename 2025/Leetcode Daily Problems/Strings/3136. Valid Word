@@ -54,6 +54,8 @@ word consists of English uppercase and lowercase letters, digits, '@', '#', and 
 
 Code :
 
+Approach 1 :
+
 public class Solution {
     public boolean isValid(String s) {
         s = s.toLowerCase();
@@ -81,5 +83,39 @@ public class Solution {
         }
         
         return vowelCount >= 1 && consonantCount >= 1;
+    }
+}
+
+
+
+Approach 2 :
+
+class Solution {
+
+    public boolean isValid(String word) {
+        if (word.length() < 3) {
+            return false;
+        }
+        boolean hasVowel = false;
+        boolean hasConsonant = false;
+        for (char c : word.toCharArray()) {
+            if (Character.isLetter(c)) {
+                char ch = Character.toLowerCase(c);
+                if (
+                    ch == 'a' ||
+                    ch == 'e' ||
+                    ch == 'i' ||
+                    ch == 'o' ||
+                    ch == 'u'
+                ) {
+                    hasVowel = true;
+                } else {
+                    hasConsonant = true;
+                }
+            } else if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return hasVowel && hasConsonant;
     }
 }
