@@ -1,0 +1,85 @@
+You are given an array of positive integers nums and want to erase a subarray containing unique elements. The score you get by erasing the subarray is equal to the sum of its elements.
+
+Return the maximum score you can get by erasing exactly one subarray.
+
+An array b is called to be a subarray of a if it forms a contiguous subsequence of a, that is, if it is equal to a[l],a[l+1],...,a[r] for some (l,r).
+
+ 
+
+Example 1:
+
+Input: nums = [4,2,4,5,6]
+Output: 17
+Explanation: The optimal subarray here is [2,4,5,6].
+Example 2:
+
+Input: nums = [5,2,1,2,5,2,1,2,5]
+Output: 8
+Explanation: The optimal subarray here is [5,2,1] or [1,2,5].
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+1 <= nums[i] <= 104
+
+
+Code :
+
+Approach 1 : (Using HashMap) -- O(n)
+
+class Solution {
+    public int maximumUniqueSubarray(int[] nums) {
+        int left = 0, right = 0;
+        Map<Integer, Integer> freq = new HashMap<>();
+        int currSum = 0, maxSum = 0;
+        int n = nums.length;
+
+        while (right < n) {
+            int num = nums[right];
+            freq.put(num, freq.getOrDefault(num, 0) + 1);
+            currSum += num;
+
+            while (freq.get(num) > 1) {
+                int removeNum = nums[left];
+                freq.put(removeNum, freq.get(removeNum) - 1);
+                if (freq.get(removeNum) == 0) {
+                    freq.remove(removeNum);
+                }
+                currSum -= removeNum;
+                left++;
+            }
+
+            maxSum = Math.max(maxSum, currSum);
+            right++;
+        }
+
+        return maxSum;
+    }
+}
+
+
+Approach 2: (Using HashSet) -- O(n)
+
+class Solution {
+    public int maximumUniqueSubarray(int[] nums) {
+        int left = 0, right = 0;
+        Set<Integer> set = new HashSet<>();
+        int currSum = 0, maxSum = 0;
+
+        while (right < nums.length) {
+            if (!set.contains(nums[right])) {
+                set.add(nums[right]);
+                currSum += nums[right];
+                maxSum = Math.max(maxSum, currSum);
+                right++;
+            } else {
+                set.remove(nums[left]);
+                currSum -= nums[left];
+                left++;
+            }
+        }
+
+        return maxSum;
+    }
+}
