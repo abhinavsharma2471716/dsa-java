@@ -1,0 +1,89 @@
+You are given a string s and two integers x and y. You can perform two types of operations any number of times.
+
+Remove substring "ab" and gain x points.
+For example, when removing "ab" from "cabxbae" it becomes "cxbae".
+Remove substring "ba" and gain y points.
+For example, when removing "ba" from "cabxbae" it becomes "cabxe".
+Return the maximum points you can gain after applying the above operations on s.
+
+ 
+
+Example 1:
+
+Input: s = "cdbcbbaaabab", x = 4, y = 5
+Output: 19
+Explanation:
+- Remove the "ba" underlined in "cdbcbbaaabab". Now, s = "cdbcbbaaab" and 5 points are added to the score.
+- Remove the "ab" underlined in "cdbcbbaaab". Now, s = "cdbcbbaa" and 4 points are added to the score.
+- Remove the "ba" underlined in "cdbcbbaa". Now, s = "cdbcba" and 5 points are added to the score.
+- Remove the "ba" underlined in "cdbcba". Now, s = "cdbc" and 5 points are added to the score.
+Total score = 5 + 4 + 5 + 5 = 19.
+Example 2:
+
+Input: s = "aabbaaxybbaabb", x = 5, y = 4
+Output: 20
+ 
+
+Constraints:
+
+1 <= s.length <= 10^5
+1 <= x, y <= 10^4
+s consists of lowercase English letters.
+
+
+Code :
+
+class Solution {
+    public int maximumGain(String s, int x, int y) {
+        int score = 0;
+        
+        // Remove pairs in the order that maximizes the score
+        if (x >= y) {
+            score += removePairs(s, 'a', 'b', x);
+            s = removePairsString(s, 'a', 'b');
+            score += removePairs(s, 'b', 'a', y);
+        } else {
+            score += removePairs(s, 'b', 'a', y);
+            s = removePairsString(s, 'b', 'a');
+            score += removePairs(s, 'a', 'b', x);
+        }
+        
+        return score;
+    }
+
+    private int removePairs(String s, char first, char second, int gain) {
+        Stack<Character> stack = new Stack<>();
+        int score = 0;
+        
+        for (char c : s.toCharArray()) {
+            if (!stack.isEmpty() && stack.peek() == first && c == second) {
+                stack.pop();
+                score += gain;
+            } else {
+                stack.push(c);
+            }
+        }
+        
+        return score;
+    }
+
+    private String removePairsString(String s, char first, char second) {
+        Stack<Character> stack = new Stack<>();
+        StringBuilder sb = new StringBuilder();
+        
+        for (char c : s.toCharArray()) {
+            if (!stack.isEmpty() && stack.peek() == first && c == second) {
+                stack.pop();
+            } else {
+                stack.push(c);
+            }
+        }
+        
+        while (!stack.isEmpty()) {
+            sb.insert(0, stack.pop());
+        }
+        
+        return sb.toString();
+    }
+}
+
