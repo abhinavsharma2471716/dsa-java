@@ -1,0 +1,75 @@
+Given two integers n and k, split the number n into exactly k positive integers such that the product of these integers is equal to n.
+
+Return any one split in which the maximum difference between any two numbers is minimized. You may return the result in any order.
+
+ 
+
+Example 1:
+
+Input: n = 100, k = 2
+
+Output: [10,10]
+
+Explanation:
+
+The split [10, 10] yields 10 * 10 = 100 and a max-min difference of 0, which is minimal.
+
+Example 2:
+
+Input: n = 44, k = 3
+
+Output: [2,2,11]
+
+Explanation:
+
+Split [1, 1, 44] yields a difference of 43
+Split [1, 2, 22] yields a difference of 21
+Split [1, 4, 11] yields a difference of 10
+Split [2, 2, 11] yields a difference of 9
+Therefore, [2, 2, 11] is the optimal split with the smallest difference 9.
+
+ 
+
+Constraints:
+
+4 <= n <= 105
+2 <= k <= 5
+k is strictly less than the total number of positive divisors of n.
+
+Code :
+
+class Solution {
+    // Backtracking helper to generate factor splits
+    private void findFactors(int remaining, int slotsLeft, List<Integer> path, List<Integer> bestResult) {
+        // Base case: if we used all slots
+        if (slotsLeft == 0) {
+            if (remaining == 1) {
+                // Check balance: minimize max - min
+                int currentDiff = Collections.max(path) - Collections.min(path);
+                if (bestResult.isEmpty() || currentDiff < (Collections.max(bestResult) - Collections.min(bestResult))) {
+                    bestResult.clear();
+                    bestResult.addAll(path);
+                }
+            }
+            return;
+        }
+        // Try all possible divisors of "remaining"
+        for (int factor = 1; factor <= remaining; factor++) {
+            if (remaining % factor == 0) {
+                path.add(factor);                          // choose
+                findFactors(remaining / factor, slotsLeft - 1, path, bestResult); 
+                path.remove(path.size() - 1);              // backtrack
+            }
+        }
+    }
+    public int[] minDifference(int n, int k) {
+        List<Integer> bestResult = new ArrayList<>();
+        findFactors(n, k, new ArrayList<>(), bestResult);
+        // Convert list to array
+        int[] result = new int[bestResult.size()];
+        for (int i = 0; i < bestResult.size(); i++) {
+            result[i] = bestResult.get(i);
+        }
+        return result;
+    }
+}
