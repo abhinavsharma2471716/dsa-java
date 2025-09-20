@@ -105,11 +105,11 @@ class Router {
 
         if (queue.size() == limit) { // remove oldest
             DataPacket removed = queue.pollFirst();
-            if (removed != null) {
+            
                 seen.remove(key(removed.source, removed.destination, removed.timestamp));
                 ArrayList<Integer> tsList = destTimestamps.get(removed.destination);
                 tsList.remove(0); // remove oldest timestamp
-            }
+            
         }
 
         DataPacket dp = new DataPacket(source, destination, timestamp);
@@ -215,4 +215,4 @@ lowerBound(tsList, startTime) → O(log m)
 
 upperBound(tsList, endTime) → O(log m)
 
-So overall: O(log m), where m = # of timestamps for the destination.
+
