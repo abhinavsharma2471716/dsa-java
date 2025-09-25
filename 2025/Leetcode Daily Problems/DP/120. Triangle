@@ -91,3 +91,37 @@ class Solution {
         return dp[0];
     }
 }
+
+
+
+Note:
+
+Approach 1: Top-Down Recursive DP with Memoization
+
+Description:
+
+This approach starts from the top of the triangle and recursively explores all paths to the bottom.
+
+It uses a dp array to memoize already computed subproblems, avoiding repeated calculations.
+
+Key Traits:
+
+Recursion + Memoization
+
+Also called Top-Down DP or Memoized DFS.
+
+
+Approach 2: Bottom-Up DP with Space Optimization
+
+Description:
+
+This approach starts from the bottom row and works upwards, calculating the minimum path sum at each step.
+
+Only a 1D array is used for storing intermediate results, so the space complexity is reduced to 
+O(n).
+
+Key Traits:
+
+Iterative Bottom-Up DP
+
+Space-optimized version of standard DP
