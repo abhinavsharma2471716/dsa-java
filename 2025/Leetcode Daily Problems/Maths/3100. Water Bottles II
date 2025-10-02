@@ -1,0 +1,163 @@
+You are given two integers numBottles and numExchange.
+
+numBottles represents the number of full water bottles that you initially have. In one operation, you can perform one of the following operations:
+
+Drink any number of full water bottles turning them into empty bottles.
+Exchange numExchange empty bottles with one full water bottle. Then, increase numExchange by one.
+Note that you cannot exchange multiple batches of empty bottles for the same value of numExchange. For example, if numBottles == 3 and numExchange == 1, you cannot exchange 3 empty water bottles for 3 full bottles.
+
+Return the maximum number of water bottles you can drink.
+
+ 
+
+Example 1:
+
+
+Input: numBottles = 13, numExchange = 6
+Output: 15
+Explanation: The table above shows the number of full water bottles, empty water bottles, the value of numExchange, and the number of bottles drunk.
+Example 2:
+
+
+Input: numBottles = 10, numExchange = 3
+Output: 13
+Explanation: The table above shows the number of full water bottles, empty water bottles, the value of numExchange, and the number of bottles drunk.
+ 
+
+Constraints:
+
+1 <= numBottles <= 100 
+1 <= numExchange <= 100
+ 
+
+
+Approach 1: O(sqrt(n))
+
+class Solution {
+    public int maxBottlesDrunk(int numBottles, int numExchange) {
+        int emptyBottles = 0;
+        int fullBottles = numBottles;
+        int bottlesDrunk = 0;
+
+        while (fullBottles > 0) {
+            // Drink all full bottles
+            bottlesDrunk += fullBottles;
+            emptyBottles += fullBottles;
+            fullBottles = 0;
+
+            // Exchange empty bottles for full bottles
+            while (emptyBottles >= numExchange) {
+                emptyBottles -= numExchange;
+                fullBottles++;
+                numExchange++;
+            }
+        }
+
+        return bottlesDrunk;
+    }
+}
+
+
+Approach 2: O(sqrt(n))
+
+class Solution {
+    public int maxBottlesDrunk(int numBottles, int numExchange) {
+        int ans = numBottles;  // start with all bottles you drink initially
+        for (int empty = numBottles; empty >= numExchange; numExchange++) {
+            ans++;                         // you drink one more bottle from exchange
+            empty -= numExchange - 1;      // spent numExchange, got 1 full bottle back → net loss of (numExchange - 1) empties
+        }
+        return ans;
+    }
+}
+
+Approach 3: O(1)
+
+
+class Solution {
+    public int maxBottlesDrunk(int numBottles, int numExchange) {
+        int exchanges = 0;
+
+        // Quadratic equation form: t^2 + (2k - 3)t - 2n = 0
+        int A = 1;
+        int B = 2 * numExchange - 3;
+        int C = -2 * numBottles;
+
+        // Solve for maximum possible exchanges (t)
+        exchanges = (int) Math.ceil((-B + Math.sqrt((long) B * B - 4L * A * C)) / (2.0 * A));
+
+        // Total bottles drunk = initial bottles + exchanges - 1
+        return numBottles + exchanges -  1;
+    }
+}
+
+
+Notes:
+
+Approach 1:
+
+You start with numBottles full bottles and 0 empty bottles.
+
+In the outer while (fullBottles > 0) loop:
+
+You drink all full bottles (increment bottlesDrunk and emptyBottles) and set fullBottles = 0.
+
+Then, in the inner while (emptyBottles >= numExchange) loop:
+
+You exchange numExchange empty bottles for 1 full bottle and increment numExchange by 1.
+
+Step 1: Outer loop
+
+Each iteration drinks all fullBottles, which then becomes 0.
+
+The outer loop continues as long as exchanging empty bottles produces new full bottles.
+
+Step 2: Inner loop
+
+The inner loop condition is emptyBottles >= numExchange.
+
+Important: You are incrementing numExchange each time (numExchange++).
+
+This means the number of empty bottles required to get a new full bottle increases every time.
+
+So each time, fewer exchanges are possible.
+
+Step 3: Complexity estimate
+
+Suppose initially numBottles = n and numExchange = k.
+
+First exchange: emptyBottles -= k, fullBottles++, k++.
+
+Next exchange: emptyBottles -= (k+1), fullBottles++, k++.
+
+So the inner loop runs roughly O(sqrt(n)) times because the sum of first m natural numbers grows quadratically:
+
+k+(k+1)+(k+2)+⋯+(k+m−1)≤n
+
+Outer loop runs each time new fullBottles are obtained, but eventually emptyBottles < numExchange, so number of iterations is bounded by O(sqrt(n)) as well.
+
+✅ Time Complexity
+
+Inner loop dominates: roughly O(sqrt(n)).
+
+Outer loop: contributes at most the same order.
+
+
+Approach 2:
+
+Let numBottles=n and numExchange=k.
+
+Time complexity: O(sqrt(n)).
+
+Let t be the number of times we exchange empty bottles for water. Then, the total amount reduced from empty after the first t exchanges is S(t)= 
+i=0
+∑
+t−1
+=
+(k+i−1)=t(k−1)+ t(t−1)/2
+​
+ . Since S(t)≤n, substituting into the above formula and simplifying gives t 
+2 +(2⋅k−3)t−2⋅n≤0, therefore the upper bound of t is O(sqrt(n))
+
+
+
