@@ -1,0 +1,90 @@
+Your country has an infinite number of lakes. Initially, all the lakes are empty, but when it rains over the nth lake, the nth lake becomes full of water. If it rains over a lake that is full of water, there will be a flood. Your goal is to avoid floods in any lake.
+
+Given an integer array rains where:
+
+rains[i] > 0 means there will be rains over the rains[i] lake.
+rains[i] == 0 means there are no rains this day and you can choose one lake this day and dry it.
+Return an array ans where:
+
+ans.length == rains.length
+ans[i] == -1 if rains[i] > 0.
+ans[i] is the lake you choose to dry in the ith day if rains[i] == 0.
+If there are multiple valid answers return any of them. If it is impossible to avoid flood return an empty array.
+
+Notice that if you chose to dry a full lake, it becomes empty, but if you chose to dry an empty lake, nothing changes.
+
+ 
+
+Example 1:
+
+Input: rains = [1,2,3,4]
+Output: [-1,-1,-1,-1]
+Explanation: After the first day full lakes are [1]
+After the second day full lakes are [1,2]
+After the third day full lakes are [1,2,3]
+After the fourth day full lakes are [1,2,3,4]
+There's no day to dry any lake and there is no flood in any lake.
+Example 2:
+
+Input: rains = [1,2,0,0,2,1]
+Output: [-1,-1,2,1,-1,-1]
+Explanation: After the first day full lakes are [1]
+After the second day full lakes are [1,2]
+After the third day, we dry lake 2. Full lakes are [1]
+After the fourth day, we dry lake 1. There is no full lakes.
+After the fifth day, full lakes are [2].
+After the sixth day, full lakes are [1,2].
+It is easy that this scenario is flood-free. [-1,-1,1,2,-1,-1] is another acceptable scenario.
+Example 3:
+
+Input: rains = [1,2,0,1,2]
+Output: []
+Explanation: After the second day, full lakes are  [1,2]. We have to dry one lake in the third day.
+After that, it will rain over lakes [1,2]. It's easy to prove that no matter which lake you choose to dry in the 3rd day, the other one will flood.
+ 
+
+Constraints:
+
+1 <= rains.length <= 10^5
+0 <= rains[i] <= 10^9
+
+Code : T.C. - O(nlogn)
+
+class Solution {
+    public int[] avoidFlood(int[] rains) {
+        // Result array: will hold -1 for rain days and lake numbers for dry days
+        int[] ans = new int[rains.length];
+        Arrays.fill(ans, 1); // Default fill with 1 (arbitrary) for dry days, you can choose any lake starting from 1..max(rains.length) in the constraint
+        // TreeSet to store indices of dry days (sorted order)
+        TreeSet<Integer> set = new TreeSet<Integer>();
+        // Map to track the last day each lake received rain
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        // Iterate through each day
+        for (int i = 0; i < rains.length; ++i) {
+            if (rains[i] == 0) {
+                // If no rain, add this index to available dry days
+                set.add(i);
+            } else {
+                // It rains today, mark this day as -1 in the result
+                ans[i] = -1;
+                // Check if this lake was already filled before
+                if (map.containsKey(rains[i])) {
+                    // Find the next available dry day after the last rain day of this lake
+                    Integer it = set.ceiling(map.get(rains[i]));
+                    // If no dry day is available to dry this lake, flood occurs
+                    if (it == null) {
+                        return new int[0];
+                    }
+                    // Use this dry day to dry the current lake
+                    ans[it] = rains[i];
+                    // Remove this dry day from available set
+                    set.remove(it);
+                }
+                // Update the last day this lake was filled
+                map.put(rains[i], i);
+            }
+        }
+        // Return the final result array
+        return ans;
+    }
+}
