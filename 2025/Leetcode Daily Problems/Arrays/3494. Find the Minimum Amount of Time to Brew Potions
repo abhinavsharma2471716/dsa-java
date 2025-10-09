@@ -54,31 +54,33 @@ Code : T.C. - O(n*m)
 class Solution {
     public long minTime(int[] skill, int[] mana) {
         int n = skill.length;
-        long[] endTime = new long[n];
-        Arrays.fill(endTime, 0);
-        
-        for (int i = 0; i < mana.length; ++i) {
-            long t = 0, maxDiff = 0;
-            
-            // Brew potion i through all wizards sequentially
-            for (int j = 0; j < n; ++j) {
-                // Find how much delay is needed to stay synchronized
-                maxDiff = Math.max(maxDiff, endTime[j] - t);
-                
-                // Wizard j brews potion i
-                t += (long) skill[j] * (long) mana[i];
-                
-                // Record when wizard j finishes this potion (before adjustment)
-                endTime[j] = t;
+        int m = mana.length;
+
+        // finishTime[i] represents the time at which the i-th wizard finishes brewing the current potion
+        long[] finishTime = new long[n];
+
+        // Process each potion one by one
+        for (int potion = 0; potion < m; potion++) {
+
+            // The first wizard always starts immediately when the potion begins
+            finishTime[0] += (long) skill[0] * mana[potion];
+
+            // Calculate finish times for each wizard in order
+            for (int wizard = 1; wizard < n; wizard++) {
+                // A wizard can only start once both:
+                // - They are done with the previous potion
+                // - The previous wizard has finished the current potion
+                long startTime = Math.max(finishTime[wizard], finishTime[wizard - 1]);
+                finishTime[wizard] = startTime + (long) skill[wizard] * mana[potion];
             }
-            
-            // Apply synchronization delay for all wizards
-            for (int j = 0; j < n; ++j) {
-                endTime[j] += maxDiff;
+
+            // Adjust times backward to maintain proper synchronization between wizards
+            for (int wizard = n - 1; wizard > 0; wizard--) {
+                finishTime[wizard - 1] = finishTime[wizard] - (long) skill[wizard] * mana[potion];
             }
         }
-        
-        // The last wizard's finish time is the total brewing time
-        return endTime[n - 1];
+
+        // The total time taken is when the last wizard finishes the final potion
+        return finishTime[n - 1];
     }
 }
