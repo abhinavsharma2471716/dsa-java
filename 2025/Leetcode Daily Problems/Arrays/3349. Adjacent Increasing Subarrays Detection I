@@ -32,7 +32,7 @@ Constraints:
 -1000 <= nums[i] <= 1000
 
 
-Code :
+Code : T.C. -  O(n × k)
 
 Approach 1:
 
@@ -76,7 +76,7 @@ class Solution {
 }
 
 
-Approach 2:
+Approach 2: //O(n) because both passes are linear
 
 class Solution {
     public boolean hasIncreasingSubarrays(List<Integer> nums, int k) {
