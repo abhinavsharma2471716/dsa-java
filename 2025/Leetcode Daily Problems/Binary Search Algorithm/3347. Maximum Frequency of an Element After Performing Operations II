@@ -1,0 +1,121 @@
+You are given an integer array nums and two integers k and numOperations.
+
+You must perform an operation numOperations times on nums, where in each operation you:
+
+Select an index i that was not selected in any previous operations.
+Add an integer in the range [-k, k] to nums[i].
+Return the maximum possible frequency of any element in nums after performing the operations.
+
+ 
+
+Example 1:
+
+Input: nums = [1,4,5], k = 1, numOperations = 2
+
+Output: 2
+
+Explanation:
+
+We can achieve a maximum frequency of two by:
+
+Adding 0 to nums[1]. nums becomes [1, 4, 5].
+Adding -1 to nums[2]. nums becomes [1, 4, 4].
+Example 2:
+
+Input: nums = [5,11,20,20], k = 5, numOperations = 1
+
+Output: 2
+
+Explanation:
+
+We can achieve a maximum frequency of two by:
+
+Adding 0 to nums[1].
+ 
+
+Constraints:
+
+1 <= nums.length <= 10^5
+1 <= nums[i] <= 10^9
+0 <= k <= 10^9
+0 <= numOperations <= nums.length
+
+Code: 
+
+Sorting: O(n log n)
+Building freq and modes: O(n + u log u) ≤ O(n log n)
+Loop over modes + binary searches: O(u log n) ≤ O(n log n)
+Total: O(nlogn)
+	​
+
+
+class Solution {
+    public int maxFrequency(int[] nums, int k, int numOperations) {
+        Arrays.sort(nums);
+        int n  = nums.length;
+        int ans = 0;
+        TreeSet<Integer> modes = new TreeSet<>();
+        Map<Integer, Integer> freq = new HashMap<>();
+
+        //Helper  to add mode  and it's boundary candidates
+        int i=0;
+        while(i<n){
+            int num = nums[i];
+            int j=i;
+            while(j<n && nums[j] == num){
+                j++;
+            }
+            int count = j-i;
+            freq.put(num, count);
+            ans = Math.max(ans, count);
+
+            modes.add(num);
+            if(num - k >= nums[0]){
+                modes.add(num - k);
+            }
+            if(num + k <=  nums[n-1]){
+                modes.add(num + k);
+            }
+            i= j;
+        }
+        for(int mode: modes){
+          // System.out.println("Mode : "+ mode);
+            int left  = lowerBound(nums, mode -k);
+            int right = upperBound(nums, mode + k) - 1;
+            int countInRange = right - left +1;
+            int baseFreq = freq.getOrDefault(mode,0);
+            int possible = Math.min(countInRange, baseFreq + numOperations);
+          //  System.out.println("possible : "+ possible);
+            ans = Math.max(ans, possible); 
+          // System.out.println("ans : "+ ans);
+        }
+        return ans;
+    }
+    //first index >= value
+    private int lowerBound(int[] nums, int value){
+        int l = 0, r = nums.length;
+        while(l < r){
+            int mid = l+ (r-l)/2;
+            if(nums[mid] < value){
+                l = mid +1;
+            }else{
+                r = mid;
+            }
+        }
+        return l;
+    }
+
+    //first index > value
+    private int upperBound(int[] nums, int value){
+        int l = 0, r = nums.length;
+        while(l < r){
+            int mid = l+ (r-l)/2;
+            if(nums[mid] <= value){
+                l = mid +1;
+            }else{
+                r = mid;
+            }
+        }
+        return l;
+    }
+}
