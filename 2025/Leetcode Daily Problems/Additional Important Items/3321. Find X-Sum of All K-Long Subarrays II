@@ -1,0 +1,161 @@
+You are given an array nums of n integers and two integers k and x.
+
+The x-sum of an array is calculated by the following procedure:
+
+Count the occurrences of all elements in the array.
+Keep only the occurrences of the top x most frequent elements. If two elements have the same number of occurrences, the element with the bigger value is considered more frequent.
+Calculate the sum of the resulting array.
+Note that if an array has less than x distinct elements, its x-sum is the sum of the array.
+
+Return an integer array answer of length n - k + 1 where answer[i] is the x-sum of the subarray nums[i..i + k - 1].
+
+ 
+
+Example 1:
+
+Input: nums = [1,1,2,2,3,4,2,3], k = 6, x = 2
+
+Output: [6,10,12]
+
+Explanation:
+
+For subarray [1, 1, 2, 2, 3, 4], only elements 1 and 2 will be kept in the resulting array. Hence, answer[0] = 1 + 1 + 2 + 2.
+For subarray [1, 2, 2, 3, 4, 2], only elements 2 and 4 will be kept in the resulting array. Hence, answer[1] = 2 + 2 + 2 + 4. Note that 4 is kept in the array since it is bigger than 3 and 1 which occur the same number of times.
+For subarray [2, 2, 3, 4, 2, 3], only elements 2 and 3 are kept in the resulting array. Hence, answer[2] = 2 + 2 + 2 + 3 + 3.
+Example 2:
+
+Input: nums = [3,8,7,8,7,5], k = 2, x = 2
+
+Output: [11,15,15,15,12]
+
+Explanation:
+
+Since k == x, answer[i] is equal to the sum of the subarray nums[i..i + k - 1].
+
+ 
+
+Constraints:
+
+nums.length == n
+1 <= n <= 10^5
+1 <= nums[i] <= 10^9
+1 <= x <= k <= nums.length
+
+
+Code: //O(n * log k)
+
+class Solution {
+    long sum = 0; // keeps track of sum of (freq * val) for top X elements
+    TreeSet<int[]> topX; // stores top X (freq, val) pairs
+    TreeSet<int[]> rest; // stores remaining (freq, val) pairs
+    Map<Integer, Integer> freq; // frequency map -> value -> count
+
+    public long[] findXSum(int[] nums, int k, int x) {
+        int n = nums.length;
+        sum = 0;
+        freq = new HashMap<>();
+
+        // Custom comparator to sort by (freq ascending, value ascending)
+        Comparator<int[]> comp = (a, b) -> {
+            if (a[0] != b[0]) return a[0] - b[0];
+            return a[1] - b[1];
+        };
+
+        topX = new TreeSet<>(comp); // top x elements by frequency
+        rest = new TreeSet<>(comp); // other elements
+
+        List<Long> resultList = new ArrayList<>();
+
+        int left = 0;
+
+        // Sliding window: move right pointer
+        for (int right = 0; right < n; right++) {
+            int num = nums[right];
+
+            // Remove old entry if num already exists
+            if (freq.containsKey(num)) {
+                removePair(new int[]{freq.get(num), num}, x);
+            }
+
+            // Increase frequency
+            freq.put(num, freq.getOrDefault(num, 0) + 1);
+
+            // Add updated pair
+            addPair(new int[]{freq.get(num), num}, x);
+
+            // If window size == k, record answer
+            if (right - left + 1 == k) {
+                resultList.add(sum);
+
+                // Remove outgoing element (slide window)
+                int outNum = nums[left];
+                removePair(new int[]{freq.get(outNum), outNum}, x);
+                freq.put(outNum, freq.get(outNum) - 1);
+
+                if (freq.get(outNum) == 0) {
+                    freq.remove(outNum);
+                } else {
+                    addPair(new int[]{freq.get(outNum), outNum}, x);
+                }
+
+                left++;
+            }
+        }
+
+        // Convert list to array
+        long[] result = new long[resultList.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = resultList.get(i);
+        }
+        return result;
+    }
+
+    /**
+     * Adds a (freq, value) pair into either topX or rest set.
+     */
+    void addPair(int[] pair, int x) {
+        // If topX not full OR pair is larger than smallest in topX
+        if (topX.size() < x || compare(pair, topX.first()) > 0) {
+            sum += 1L * pair[0] * pair[1];
+            topX.add(pair);
+
+            // Maintain topX size == x
+            if (topX.size() > x) {
+                int[] smallest = topX.first();
+                sum -= 1L * smallest[0] * smallest[1];
+                topX.remove(smallest);
+                rest.add(smallest);
+            }
+        } else {
+            rest.add(pair);
+        }
+    }
+
+    /**
+     * Removes a (freq, value) pair from topX or rest set.
+     */
+    void removePair(int[] pair, int x) {
+        if (topX.contains(pair)) {
+            sum -= 1L * pair[0] * pair[1];
+            topX.remove(pair);
+
+            // Move largest from rest into topX (to maintain x elements)
+            if (!rest.isEmpty()) {
+                int[] largest = rest.last();
+                rest.remove(largest);
+                topX.add(largest);
+                sum += 1L * largest[0] * largest[1];
+            }
+        } else {
+            rest.remove(pair);
+        }
+    }
+
+    /**
+     * Helper to compare two (freq, val) pairs.
+     */
+    int compare(int[] a, int[] b) {
+        if (a[0] != b[0]) return a[0] - b[0];
+        return a[1] - b[1];
+    }
+}
