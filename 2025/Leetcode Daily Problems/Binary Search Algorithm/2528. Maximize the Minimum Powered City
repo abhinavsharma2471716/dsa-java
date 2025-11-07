@@ -1,0 +1,106 @@
+You are given a 0-indexed integer array stations of length n, where stations[i] represents the number of power stations in the ith city.
+
+Each power station can provide power to every city in a fixed range. In other words, if the range is denoted by r, then a power station at city i can provide power to all cities j such that |i - j| <= r and 0 <= i, j <= n - 1.
+
+Note that |x| denotes absolute value. For example, |7 - 5| = 2 and |3 - 10| = 7.
+The power of a city is the total number of power stations it is being provided power from.
+
+The government has sanctioned building k more power stations, each of which can be built in any city, and have the same range as the pre-existing ones.
+
+Given the two integers r and k, return the maximum possible minimum power of a city, if the additional power stations are built optimally.
+
+Note that you can build the k power stations in multiple cities.
+
+ 
+
+Example 1:
+
+Input: stations = [1,2,4,5,0], r = 1, k = 2
+Output: 5
+Explanation: 
+One of the optimal ways is to install both the power stations at city 1. 
+So stations will become [1,4,4,5,0].
+- City 0 is provided by 1 + 4 = 5 power stations.
+- City 1 is provided by 1 + 4 + 4 = 9 power stations.
+- City 2 is provided by 4 + 4 + 5 = 13 power stations.
+- City 3 is provided by 5 + 4 = 9 power stations.
+- City 4 is provided by 5 + 0 = 5 power stations.
+So the minimum power of a city is 5.
+Since it is not possible to obtain a larger power, we return 5.
+Example 2:
+
+Input: stations = [4,4,4,4], r = 0, k = 3
+Output: 4
+Explanation: 
+It can be proved that we cannot make the minimum power of a city greater than 4.
+ 
+
+Constraints:
+
+n == stations.length
+1 <= n <= 10^5
+0 <= stations[i] <= 10^5
+0 <= r <= n - 1
+0 <= k <= 10^9
+ 
+
+Code:
+Total Time Complexity : O(n⋅logM)
+Where:
+n = number of cities
+M = max possible power value (bounded by sum(stations) + k)
+
+class Solution {
+    public long maxPower(int[] stations, int r, int k) {
+        int n = stations.length;
+        long[] power = new long[n];
+        long[] prefix = new long[n + 1];     
+        // Compute prefix sum of stations
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + stations[i];
+        }    
+        // Compute initial power for each city using sliding window
+        for (int i = 0; i < n; i++) {
+            int left = Math.max(0, i - r);
+            int right = Math.min(n - 1, i + r);
+            power[i] = prefix[right + 1] - prefix[left];
+        }    
+        long low = 0, high = Long.MAX_VALUE;  // high can be large
+        long ans = 0;  
+        while (low <= high) {
+            long mid = (low + high) / 2;
+            if (canAchieve(power, n, r, k, mid)) {
+                ans = mid;
+                low = mid + 1; // try higher
+            } else {
+                high = mid - 1; // try lower
+            }
+        }      
+        return ans;
+    }
+    
+    private boolean canAchieve(long[] power, int n, int r, long k, long target) {
+        long[] added = new long[n];
+        long used = 0, currAdd = 0;
+        
+        for (int i = 0; i < n; i++) {
+            // Remove effect of stations that are out of current window
+            if (i - r - 1 >= 0) currAdd -= added[i - r - 1];
+            
+            long currPower = power[i] + currAdd;
+            if (currPower < target) {
+                long need = target - currPower;
+                if (need > k - used) return false;
+                
+                used += need;
+                currAdd += need;
+                
+                int addPos = Math.min(n - 1, i + r);
+                added[addPos] += need;
+            }
+        }
+        return true;
+    }
+}
+
+
