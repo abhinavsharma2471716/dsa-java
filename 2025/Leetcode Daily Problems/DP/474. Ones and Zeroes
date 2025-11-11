@@ -1,0 +1,134 @@
+You are given an array of binary strings strs and two integers m and n.
+
+Return the size of the largest subset of strs such that there are at most m 0's and n 1's in the subset.
+
+A set x is a subset of a set y if all elements of x are also elements of y.
+
+ 
+
+Example 1:
+
+Input: strs = ["10","0001","111001","1","0"], m = 5, n = 3
+Output: 4
+Explanation: The largest subset with at most 5 0's and 3 1's is {"10", "0001", "1", "0"}, so the answer is 4.
+Other valid but smaller subsets include {"0001", "1"} and {"10", "1", "0"}.
+{"111001"} is an invalid subset because it contains 4 1's, greater than the maximum of 3.
+Example 2:
+
+Input: strs = ["10","0","1"], m = 1, n = 1
+Output: 2
+Explanation: The largest subset is {"0", "1"}, so the answer is 2.
+ 
+
+Constraints:
+
+1 <= strs.length <= 600
+1 <= strs[i].length <= 100
+strs[i] consists only of digits '0' and '1'.
+1 <= m, n <= 100
+
+
+Code :
+
+
+Appraoch 1 : top-down DP (memoized recursion) 
+
+/*
+We are using a top-down DP (memoized recursion) with parameters:
+index → ranges from 0 to len (number of strings)
+m → ranges from 0 to given limit m
+n → ranges from 0 to given limit n
+So our state space is defined by (index, m, n).
+
+🔹 Step 1: Number of States
+
+There are:
+Total states
+Total states=len×(m+1)×(n+1)
+Each unique combination of (index, m, n) is computed at most once due to memoization.
+
+🔹 Step 2: Work per State
+For each state, we:
+Count zeros and ones in the current string (O(L), where L = average length of string)
+→ But we can precompute these counts for all strings in O(len × L) upfront if needed.
+Make two recursive calls (skip and take).
+Each returns memoized results, so they don’t multiply time beyond the total number of states.
+Thus, per state, the extra computation is O(1) after counting zeros/ones.
+
+🔹 Step 3: Total Time Complexity
+
+If we include precomputation of zeros/ones:
+O(len×L)+O(len×m×n)
+If we count zeros/ones inline each time (like your code does):
+O(len×m×n×L)
+Typically, since strings are short (LeetCode constraints ≤ 100), we simplify it to:
+O(len×m×n)
+	​
+
+*/
+
+
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        int len = strs.length;
+        // 3D memo: dp[i][m][n]
+        Integer[][][] memo = new Integer[len][m + 1][n + 1];
+        return dfs(strs, 0, m, n, memo);
+    }
+
+    private int dfs(String[] strs, int index, int m, int n, Integer[][][] memo) {
+        // Base case: no strings left
+        if (index == strs.length) return 0;
+
+        // Already computed
+        if (memo[index][m][n] != null) return memo[index][m][n];
+
+        // Count zeros and ones in current string
+        int zeros = 0, ones = 0;
+        for (char c : strs[index].toCharArray()) {
+            if (c == '0') zeros++;
+            else ones++;
+        }
+
+        // Option 1: Skip current string
+        int skip = dfs(strs, index + 1, m, n, memo);
+
+        // Option 2: Take current string (if possible)
+        int take = 0;
+        if (m >= zeros && n >= ones) {
+            take = 1 + dfs(strs, index + 1, m - zeros, n - ones, memo);
+        }
+
+        // Store and return the best
+        memo[index][m][n] = Math.max(skip, take);
+        return memo[index][m][n];
+    }
+}
+
+
+Approach 2: bottom-up 2D ==> t.c = O(len×m×n)
+	​
+
+
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        int[][] dp = new int[m + 1][n + 1];
+
+        for (String s : strs) {
+            int zeros = 0, ones = 0;
+            for (char c : s.toCharArray()) {
+                if (c == '0') zeros++;
+                else ones++;
+            }
+
+            // Update DP in reverse to avoid overwriting results from current iteration
+            for (int i = m; i >= zeros; i--) {
+                for (int j = n; j >= ones; j--) {
+                    dp[i][j] = Math.max(dp[i][j], dp[i - zeros][j - ones] + 1);
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+}
