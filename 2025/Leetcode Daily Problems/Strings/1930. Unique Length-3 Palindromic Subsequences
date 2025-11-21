@@ -21,7 +21,34 @@ Explanation: The 3 palindromic subsequences of length 3 are:
 
 Code : 
 
-Approach 1 : Time Complexity -> O(26*n) -> O(n) Count Letters In-Between
+
+Approach - 1:
+
+class Solution {
+    public int countPalindromicSubsequence(String s) {
+        int count = 0;
+        Map<Character, List<Integer>> map = new HashMap<>();
+
+        int n = s.length();
+        for (int i = 0; i < n; i++) {
+            map.putIfAbsent(s.charAt(i), new ArrayList<>());
+            map.get(s.charAt(i)).add(i); // add index to the list
+        }
+
+        for(Map.Entry<Character, List<Integer>> entry : map.entrySet()){
+          Character key = entry.getKey();
+          List<Integer> v = entry.getValue();
+          Set<Character> set = new HashSet<>();
+          for(int i= v.get(0)+1;i<v.get(v.size() - 1); i++){
+                set.add(s.charAt(i));
+          }
+          count = count + set.size();
+        }
+        return count;
+    }
+}
+
+Approach 2 : Time Complexity -> O(26*n) -> O(n) Count Letters In-Between
 
 class Solution {
     public int countPalindromicSubsequence(String s) {
@@ -57,7 +84,7 @@ class Solution {
     }
 }
 
-Approach 2 : Time Complexity -> O(n) Pre-Compute First and Last Indices
+Approach 3 : Time Complexity -> O(n) Pre-Compute First and Last Indices
 
 class Solution {
     public int countPalindromicSubsequence(String s) {
@@ -85,3 +112,6 @@ class Solution {
         return ans;
     }
 }
+
+
+
