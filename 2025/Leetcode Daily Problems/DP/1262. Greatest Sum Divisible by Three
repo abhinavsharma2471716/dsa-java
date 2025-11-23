@@ -1,0 +1,88 @@
+Given an integer array nums, return the maximum possible sum of elements of the array such that it is divisible by three.
+
+ 
+
+Example 1:
+
+Input: nums = [3,6,5,1,8]
+Output: 18
+Explanation: Pick numbers 3, 6, 1 and 8 their sum is 18 (maximum sum divisible by 3).
+Example 2:
+
+Input: nums = [4]
+Output: 0
+Explanation: Since 4 is not divisible by 3, do not pick any number.
+Example 3:
+
+Input: nums = [1,2,3,4,4]
+Output: 12
+Explanation: Pick numbers 1, 3, 4 and 4 their sum is 12 (maximum sum divisible by 3).
+ 
+
+Constraints:
+
+1 <= nums.length <= 4 * 10^4
+1 <= nums[i] <= 10^4
+
+Code :
+
+Approach 1: //O(n) - recursion + memo
+
+class Solution {
+
+    private int helper(int i, int[] nums, int sumMod, int[][] memo) {
+
+        if (i == nums.length) {
+            return (sumMod == 0) ? 0 : Integer.MIN_VALUE;
+        }
+
+        if (memo[i][sumMod] != Integer.MIN_VALUE) return memo[i][sumMod];
+
+        int curr = nums[i];
+        int newMod = (sumMod + curr) % 3;
+
+        int take = helper(i + 1, nums, newMod, memo);
+        if (take != Integer.MIN_VALUE) take += curr;
+
+        int skip = helper(i + 1, nums, sumMod, memo);
+
+        memo[i][sumMod] = Math.max(take, skip);
+        return memo[i][sumMod];
+    }
+
+    public int maxSumDivThree(int[] nums) {
+        int n = nums.length;
+        int[][] memo = new int[n][3];
+
+        // Fill with Integer.MIN_VALUE
+        for (int a = 0; a < n; a++) {
+            Arrays.fill(memo[a], Integer.MIN_VALUE);
+        }
+
+        int res = helper(0, nums, 0, memo);
+        return Math.max(res, 0);
+    }
+}
+
+Approach 2: //O(n) - dp
+
+class Solution {
+    public int maxSumDivThree(int[] nums) {
+        int[] dp = new int[]{0, Integer.MIN_VALUE, Integer.MIN_VALUE};
+
+        for (int num : nums) {
+            int[] temp = dp.clone();
+            for (int r = 0; r < 3; r++) {
+                if (dp[r] != Integer.MIN_VALUE) {
+                    int newSum = dp[r] + num;
+                    int newR = newSum % 3; 
+                    temp[newR] = Math.max(temp[newR], newSum);
+                }
+            }
+            dp = temp;
+        }
+
+        return dp[0];
+    }
+}
+ 
