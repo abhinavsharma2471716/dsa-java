@@ -1,0 +1,87 @@
+You are given an integer array nums and an integer k. Your task is to partition nums into one or more non-empty contiguous segments such that in each segment, the difference between its maximum and minimum elements is at most k.
+
+Return the total number of ways to partition nums under this condition.
+
+Since the answer may be too large, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+Input: nums = [9,4,1,3,7], k = 4
+
+Output: 6
+
+Explanation:
+
+There are 6 valid partitions where the difference between the maximum and minimum elements in each segment is at most k = 4:
+
+[[9], [4], [1], [3], [7]]
+[[9], [4], [1], [3, 7]]
+[[9], [4], [1, 3], [7]]
+[[9], [4, 1], [3], [7]]
+[[9], [4, 1], [3, 7]]
+[[9], [4, 1, 3], [7]]
+Example 2:
+
+Input: nums = [3,3,4], k = 0
+
+Output: 2
+
+Explanation:
+
+There are 2 valid partitions that satisfy the given conditions:
+
+[[3], [3], [4]]
+[[3, 3], [4]]
+ 
+
+Constraints:
+
+2 <= nums.length <= 5 * 10^4
+1 <= nums[i] <= 10^9
+
+
+Code : //O(n)
+
+class Solution {
+    public int countPartitions(int[] nums, int k) {
+        int n = nums.length;
+        final int MOD = 1_000_000_007;
+        int[] dp = new int[n + 1];
+        int[] pre = new int[n + 1];
+        dp[0] = 1;
+        pre[0] = 1;
+        Deque<Integer> maxD = new ArrayDeque<>();
+        Deque<Integer> minD = new ArrayDeque<>();
+        int left = 0;
+        for (int r = 0; r < n; r++) {
+            // Maintain max deque
+            while (!maxD.isEmpty() && maxD.peekLast() < nums[r]){
+                maxD.pollLast();
+            }
+            maxD.addLast(nums[r]);
+            // Maintain min deque
+            while (!minD.isEmpty() && minD.peekLast() > nums[r]){
+                minD.pollLast();
+            }
+            minD.addLast(nums[r]);
+            // Shrink left until window max-min <= k
+            while (!maxD.isEmpty() && !minD.isEmpty() &&
+                   maxD.peekFirst() - minD.peekFirst() > k) {
+
+                if (maxD.peekFirst() == nums[left]) maxD.pollFirst();
+                if (minD.peekFirst() == nums[left]) minD.pollFirst();
+                left++;
+            }
+            // dp[r+1] = sum(dp[left .. r])
+            long total = pre[r];
+            long remove = (left == 0 ? 0 : pre[left - 1]);
+            dp[r + 1] = (int) ((total - remove + MOD) % MOD);
+            pre[r + 1] = (pre[r] + dp[r + 1]) % MOD;
+        }
+        return dp[n];
+    }
+}
+
+0 <= k <= 109
