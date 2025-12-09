@@ -1,0 +1,178 @@
+You are given an integer array nums.
+
+A special triplet is defined as a triplet of indices (i, j, k) such that:
+
+0 <= i < j < k < n, where n = nums.length
+nums[i] == nums[j] * 2
+nums[k] == nums[j] * 2
+Return the total number of special triplets in the array.
+
+Since the answer may be large, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+Input: nums = [6,3,6]
+
+Output: 1
+
+Explanation:
+
+The only special triplet is (i, j, k) = (0, 1, 2), where:
+
+nums[0] = 6, nums[1] = 3, nums[2] = 6
+nums[0] = nums[1] * 2 = 3 * 2 = 6
+nums[2] = nums[1] * 2 = 3 * 2 = 6
+Example 2:
+
+Input: nums = [0,1,0,0]
+
+Output: 1
+
+Explanation:
+
+The only special triplet is (i, j, k) = (0, 2, 3), where:
+
+nums[0] = 0, nums[2] = 0, nums[3] = 0
+nums[0] = nums[2] * 2 = 0 * 2 = 0
+nums[3] = nums[2] * 2 = 0 * 2 = 0
+Example 3:
+
+Input: nums = [8,4,2,8,4]
+
+Output: 2
+
+Explanation:
+
+There are exactly two special triplets:
+
+(i, j, k) = (0, 1, 3)
+nums[0] = 8, nums[1] = 4, nums[3] = 8
+nums[0] = nums[1] * 2 = 4 * 2 = 8
+nums[3] = nums[1] * 2 = 4 * 2 = 8
+(i, j, k) = (1, 2, 4)
+nums[1] = 4, nums[2] = 2, nums[4] = 4
+nums[1] = nums[2] * 2 = 2 * 2 = 4
+nums[4] = nums[2] * 2 = 2 * 2 = 4
+ 
+
+Constraints:
+
+3 <= n == nums.length <= 10^5
+0 <= nums[i] <= 10^5
+
+Code:
+
+Approach 1: //O(nlogn)
+
+class Solution {
+    public int specialTriplets(int[] nums) {
+        int n = nums.length;
+        final int MOD = 1_000_000_007;
+
+        // Map: value -> sorted list of indices
+        Map<Integer, List<Integer>> map = new HashMap<>();
+
+        for (int i = 0; i < n; i++) {
+            map.computeIfAbsent(nums[i], k -> new ArrayList<>()).add(i);
+        }
+
+        long ans = 0;
+
+        for (int j = 1; j < n - 1; j++) {
+
+            int val = nums[j];
+            int target = val * 2;
+
+            if (!map.containsKey(target)) continue;
+
+            List<Integer> list = map.get(target);
+
+            // --- count LEFT side: i < j ---
+            int leftCount = countLess(list, j);
+
+            // --- count RIGHT side: k > j ---
+            int rightCount = countGreater(list, j);
+
+            ans = (ans + (long) leftCount * rightCount) % MOD;
+        }
+
+        return (int) ans;
+    }
+
+    // count indices < j
+    private int countLess(List<Integer> list, int j) {
+        int low = 0, high = list.size() - 1;
+        int idx = list.size(); // first index >= j
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            if (list.get(mid) >= j) {   // >= j → not allowed
+                idx = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return idx;  // indices [0 .. idx-1] are < j
+    }
+
+    // count indices > j
+    private int countGreater(List<Integer> list, int j) {
+        int low = 0, high = list.size() - 1;
+        int idx = list.size(); // first index > j
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            if (list.get(mid) > j) {    // STRICT > j
+                idx = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return list.size() - idx;
+    }
+}
+
+
+Approach 2: //O(n)
+
+class Solution {
+    public int specialTriplets(int[] nums) {
+        final int MOD = 1_000_000_007;
+
+        Map<Integer, Integer> totalCnt = new HashMap<>();   // total count
+        Map<Integer, Integer> leftCnt = new HashMap<>();    // prefix count
+
+        // count total frequencies
+        for (int v : nums) {
+            totalCnt.put(v, totalCnt.getOrDefault(v, 0) + 1);
+        }
+
+        long ans = 0;
+
+        for (int v : nums) {
+            int target = v * 2;
+
+            // how many target values appeared *before* this index?
+            int L = leftCnt.getOrDefault(target, 0);
+
+            // this value v is now included in prefix
+            leftCnt.put(v, leftCnt.getOrDefault(v, 0) + 1);
+
+            // how many target values appear *after* this index?
+            int R = totalCnt.getOrDefault(target, 0) - leftCnt.getOrDefault(target, 0);
+
+            ans = (ans + (long)L * R) % MOD;
+        }
+
+        return (int) ans;
+    }
+}
+
+ 
