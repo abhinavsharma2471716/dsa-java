@@ -1,0 +1,109 @@
+Given two strings s1 and s2, return the lowest ASCII sum of deleted characters to make two strings equal.
+
+ 
+
+Example 1:
+
+Input: s1 = "sea", s2 = "eat"
+Output: 231
+Explanation: Deleting "s" from "sea" adds the ASCII value of "s" (115) to the sum.
+Deleting "t" from "eat" adds 116 to the sum.
+At the end, both strings are equal, and 115 + 116 = 231 is the minimum sum possible to achieve this.
+Example 2:
+
+Input: s1 = "delete", s2 = "leet"
+Output: 403
+Explanation: Deleting "dee" from "delete" to turn the string into "let",
+adds 100[d] + 101[e] + 101[e] to the sum.
+Deleting "e" from "leet" adds 101[e] to the sum.
+At the end, both strings are equal to "let", and the answer is 100+101+101+101 = 403.
+If instead we turned both strings into "lee" or "eet", we would get answers of 433 or 417, which are higher.
+ 
+
+Constraints:
+
+1 <= s1.length, s2.length <= 1000
+s1 and s2 consist of lowercase English letters.
+
+Code:
+
+Approach 1 : Top Down DP - Recursion + memo -  (T.C: O(n*m))
+
+class Solution {
+    String s1, s2;
+    int[][] memo;
+    public int minimumDeleteSum(String s1, String s2) {
+        this.s1 = s1;
+        this.s2 = s2;
+        int n = s1.length(), m = s2.length();
+        memo = new int[n][m];
+        // initialize memo with -1 (uncomputed)
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return dfs(0, 0);
+    }
+    private int dfs(int i, int j) {
+        // if s1 exhausted, delete remaining s2
+        if (i == s1.length()) {
+            int sum = 0;
+            for (int k = j; k < s2.length(); k++) {
+                sum += s2.charAt(k);
+            }
+            return sum;
+        }
+        // if s2 exhausted, delete remaining s1
+        if (j == s2.length()) {
+            int sum = 0;
+            for (int k = i; k < s1.length(); k++) {
+                sum += s1.charAt(k);
+            }
+            return sum;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        if (s1.charAt(i) == s2.charAt(j)) {
+            memo[i][j] = dfs(i + 1, j + 1);
+        } else {
+            int deleteS1 = s1.charAt(i) + dfs(i + 1, j);
+            int deleteS2 = s2.charAt(j) + dfs(i, j + 1);
+            memo[i][j] = Math.min(deleteS1, deleteS2);
+        }
+        return memo[i][j];
+    }
+}
+
+Approach 2 : Bottom Up DP - Tabulation -  (TC: O(n*m))
+
+
+class Solution {
+    public int minimumDeleteSum(String s1, String s2) {
+        int n = s1.length(), m = s2.length();
+        int[][] dp = new int[n + 1][m + 1];
+
+        // Base case: delete all remaining characters
+        for (int i = n - 1; i >= 0; i--) {
+            dp[i][m] = dp[i + 1][m] + s1.charAt(i);
+        }
+        for (int j = m - 1; j >= 0; j--) {
+            dp[n][j] = dp[n][j + 1] + s2.charAt(j);
+        }
+
+        // Fill DP table
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                if (s1.charAt(i) == s2.charAt(j)) {
+                    dp[i][j] = dp[i + 1][j + 1];
+                } else {
+                    dp[i][j] = Math.min(
+                        s1.charAt(i) + dp[i + 1][j],
+                        s2.charAt(j) + dp[i][j + 1]
+                    );
+                }
+            }
+        }
+
+        return dp[0][0];
+    }
+}
+
+
