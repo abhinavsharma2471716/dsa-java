@@ -1,0 +1,110 @@
+Given a rows x cols binary matrix filled with 0's and 1's, find the largest rectangle containing only 1's and return its area.
+
+ 
+
+Example 1:
+
+
+Input: matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+Output: 6
+Explanation: The maximal rectangle is shown in the above picture.
+Example 2:
+
+Input: matrix = [["0"]]
+Output: 0
+Example 3:
+
+Input: matrix = [["1"]]
+Output: 1
+ 
+
+Constraints:
+
+rows == matrix.length
+cols == matrix[i].length
+1 <= rows, cols <= 200
+matrix[i][j] is '0' or '1'.
+
+Code: //O(m*n)
+
+
+class Solution {
+    // Method to find the index of the Next Smaller Element to the Right (NSR)
+    public int[] nextSmallerToRight(int[] heights) {
+        Stack<Integer> stack = new Stack<>();
+        int n = heights.length;
+        int pseudoIndex = n; // Pseudo-index used for elements with no smaller element to the right
+        int[] right = new int[n];
+        
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i]) {
+                stack.pop(); // Pop elements until we find a smaller element
+            }
+            right[i] = stack.isEmpty() ? pseudoIndex : stack.peek(); // Update the NSR index
+            stack.push(i);
+        }
+        return right;
+    }
+
+    // Method to find the index of the Next Smaller Element to the Left (NSL)
+    public int[] nextSmallerToLeft(int[] heights) {
+        Stack<Integer> stack = new Stack<>();
+        int n = heights.length;
+        int pseudoIndex = -1; // Pseudo-index used for elements with no smaller element to the left
+        int[] left = new int[n];
+        
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i]) {
+                stack.pop(); // Pop elements until we find a smaller element
+            }
+            left[i] = stack.isEmpty() ? pseudoIndex : stack.peek(); // Update the NSL index
+            stack.push(i);
+        }
+        return left;
+    }
+
+    // Method to calculate the Maximum Area Histogram (MAH)
+    public int maxAreaHistogram(int[] heights) {
+        int n = heights.length;
+        int[] right = nextSmallerToRight(heights);
+        int[] left = nextSmallerToLeft(heights);
+        int[] width = new int[n];
+        int maxArea = 0;
+
+        for (int i = 0; i < n; i++) {
+            width[i] = right[i] - left[i] - 1;
+            int area = width[i] * heights[i];
+            maxArea = Math.max(maxArea, area);
+        }
+        return maxArea;
+    }
+
+    // Main method to find the maximal rectangle area in the binary matrix
+    public int maximalRectangle(char[][] matrix) {
+        if (matrix.length == 0)
+            return 0;
+        
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int[] height = new int[cols];
+        int maxArea = 0;
+
+        for (int i = 0; i < cols; i++) {
+            height[i] = (matrix[0][i] == '1') ? 1 : 0;
+        }
+        maxArea = maxAreaHistogram(height);
+
+        for (int i = 1; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == '0')
+                    height[j] = 0;
+                else
+                    height[j] += 1;
+            }
+            maxArea = Math.max(maxArea, maxAreaHistogram(height));
+        }
+        return maxArea;
+    }
+}
+
+
