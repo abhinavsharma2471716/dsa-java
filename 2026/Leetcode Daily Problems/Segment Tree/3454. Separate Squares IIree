@@ -1,0 +1,172 @@
+You are given a 2D integer array squares. Each squares[i] = [xi, yi, li] represents the coordinates of the bottom-left point and the side length of a square parallel to the x-axis.
+
+Find the minimum y-coordinate value of a horizontal line such that the total area covered by squares above the line equals the total area covered by squares below the line.
+
+Answers within 10-5 of the actual answer will be accepted.
+
+Note: Squares may overlap. Overlapping areas should be counted only once in this version.
+
+ 
+
+Example 1:
+
+Input: squares = [[0,0,1],[2,2,1]]
+
+Output: 1.00000
+
+Explanation:
+
+
+
+Any horizontal line between y = 1 and y = 2 results in an equal split, with 1 square unit above and 1 square unit below. The minimum y-value is 1.
+
+Example 2:
+
+Input: squares = [[0,0,2],[1,1,1]]
+
+Output: 1.00000
+
+Explanation:
+
+
+
+Since the blue square overlaps with the red square, it will not be counted again. Thus, the line y = 1 splits the squares into two equal parts.
+
+ 
+
+Constraints:
+
+1 <= squares.length <= 5 * 104
+squares[i] = [xi, yi, li]
+squares[i].length == 3
+0 <= xi, yi <= 109
+1 <= li <= 109
+The total area of all the squares will not exceed 1015.
+
+
+
+Code : //O(nlogn)
+
+
+class Solution {
+
+    // Sweep event
+    static class Event {
+        double y;
+        int type; // +1 add, -1 remove
+        double x1, x2;
+
+        Event(double y, int type, double x1, double x2) {
+            this.y = y;
+            this.type = type;
+            this.x1 = x1;
+            this.x2 = x2;
+        }
+    }
+
+    // Segment Tree for union length on X-axis
+    static class SegmentTree {
+        int n;
+        double[] xs;
+        int[] cover;
+        double[] length;
+
+        SegmentTree(double[] xs) {
+            this.xs = xs;
+            this.n = xs.length - 1;
+            cover = new int[4 * n];
+            length = new double[4 * n];
+        }
+
+        void update(int idx, int l, int r, int ql, int qr, int val) {
+            if (ql >= r || qr <= l) return;
+
+            if (ql <= l && r <= qr) {
+                cover[idx] += val;
+            } else {
+                int mid = (l + r) / 2;
+                update(idx * 2, l, mid, ql, qr, val);
+                update(idx * 2 + 1, mid, r, ql, qr, val);
+            }
+
+            if (cover[idx] > 0) {
+                length[idx] = xs[r] - xs[l];
+            } else if (l + 1 == r) {
+                length[idx] = 0;
+            } else {
+                length[idx] = length[idx * 2] + length[idx * 2 + 1];
+            }
+            
+        }
+    }
+
+    public double separateSquares(int[][] squares) {
+
+        List<Event> events = new ArrayList<>();
+        Set<Double> xSet = new HashSet<>();
+
+        // Build events
+        for (int[] s : squares) {
+            double x = s[0], y = s[1], l = s[2];
+            events.add(new Event(y, +1, x, x + l));
+            events.add(new Event(y + l, -1, x, x + l));
+            xSet.add(x);
+            xSet.add(x + l);
+        }
+
+        // Sort X coordinates
+        double[] xs = xSet.stream().mapToDouble(d -> d).sorted().toArray();
+        Map<Double, Integer> xIndex = new HashMap<>();
+        for (int i = 0; i < xs.length; i++) xIndex.put(xs[i], i);
+
+        // Sort events by Y
+        events.sort(Comparator.comparingDouble(e -> e.y));
+
+        SegmentTree st = new SegmentTree(xs);
+
+        // First sweep: compute total union area
+        double totalArea = 0;
+        double prevY = events.get(0).y;
+
+        for (Event e : events) {
+            double curY = e.y;
+            totalArea += st.length[1] * (curY - prevY);
+
+            int l = xIndex.get(e.x1);
+            int r = xIndex.get(e.x2);
+            st.update(1, 0, xs.length - 1, l, r, e.type);
+
+            prevY = curY;
+        }
+
+        double target = totalArea / 2.0;
+
+        // Reset for second sweep
+        Arrays.fill(st.cover, 0);
+        Arrays.fill(st.length, 0);
+
+        double areaSoFar = 0;
+        prevY = events.get(0).y;
+
+        // Second sweep: find exact Y
+        for (Event e : events) {
+            double curY = e.y;
+            double slabArea = st.length[1] * (curY - prevY);
+
+            if (areaSoFar + slabArea >= target) {
+                double remaining = target - areaSoFar;
+                return prevY + remaining / st.length[1];
+            }
+
+            areaSoFar += slabArea;
+
+            int l = xIndex.get(e.x1);
+            int r = xIndex.get(e.x2);
+            st.update(1, 0, xs.length - 1, l, r, e.type);
+
+            prevY = curY;
+        }
+
+        return prevY; // fallback
+    }
+}
