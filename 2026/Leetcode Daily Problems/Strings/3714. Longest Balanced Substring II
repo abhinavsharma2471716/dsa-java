@@ -1,0 +1,129 @@
+You are given a string s consisting only of the characters 'a', 'b', and 'c'.
+
+A substring of s is called balanced if all distinct characters in the substring appear the same number of times.
+
+Return the length of the longest balanced substring of s.
+
+ 
+
+Example 1:
+
+Input: s = "abbac"
+
+Output: 4
+
+Explanation:
+
+The longest balanced substring is "abba" because both distinct characters 'a' and 'b' each appear exactly 2 times.
+
+Example 2:
+
+Input: s = "aabcc"
+
+Output: 3
+
+Explanation:
+
+The longest balanced substring is "abc" because all distinct characters 'a', 'b' and 'c' each appear exactly 1 time.
+
+Example 3:
+
+Input: s = "aba"
+
+Output: 2
+
+Explanation:
+
+One of the longest balanced substrings is "ab" because both distinct characters 'a' and 'b' each appear exactly 1 time. Another longest balanced substring is "ba".
+
+ 
+
+Constraints:
+
+1 <= s.length <= 10^5
+s contains only the characters 'a', 'b', and 'c'.
+
+
+Code : // O(n)
+
+class Solution {
+    public int longestBalanced(String s) {
+        int n = s.length();
+        int maxLength = 0;
+
+        // Step 1: Longest contiguous same character
+        int index = 0;
+        while (index < n) {
+            int end = index;
+            while (end < n && s.charAt(end) == s.charAt(index)) {
+                end++;
+            }
+            maxLength = Math.max(maxLength, end - index);
+            index = end;
+        }
+
+        // Step 2: Longest balanced substring ignoring one character
+        maxLength = Math.max(maxLength, longestTwoCharBalanced(s, 'a', 'b', 'c'));
+        maxLength = Math.max(maxLength, longestTwoCharBalanced(s, 'a', 'c', 'b'));
+        maxLength = Math.max(maxLength, longestTwoCharBalanced(s, 'b', 'c', 'a'));
+
+        // Step 3: Longest balanced substring containing a, b, c using prefix counts
+        int countA = 0, countB = 0, countC = 0;
+        Map<String, Integer> prefixMap = new HashMap<>();
+        prefixMap.put("0,0", -1); // Base case for zero differences
+
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (ch == 'a') countA++;
+            else if (ch == 'b') countB++;
+            else countC++;
+
+            // Key represents differences: a-b and a-c
+            String key = (countA - countB) + "," + (countA - countC);
+
+            if (prefixMap.containsKey(key)) {
+                maxLength = Math.max(maxLength, i - prefixMap.get(key));
+            } else {
+                prefixMap.put(key, i);
+            }
+        }
+
+        return maxLength;
+    }
+
+    // Helper method: Longest balanced substring with only two characters, ignoring the third
+    private int longestTwoCharBalanced(String s, char char1, char char2, char ignoreChar) {
+        int n = s.length();
+        int maxLen = 0;
+        int i = 0;
+
+        while (i < n) {
+            if (s.charAt(i) == ignoreChar) {
+                i++;
+                continue;
+            }
+
+            int start = i;
+            int balance = 0;
+            Map<Integer, Integer> firstOccurrence = new HashMap<>();
+            firstOccurrence.put(0, start); // Balance 0 at start index
+
+            int j = start;
+            while (j < n && s.charAt(j) != ignoreChar) {
+                balance += (s.charAt(j) == char1) ? 1 : -1;
+
+                if (!firstOccurrence.containsKey(balance)) {
+                    firstOccurrence.put(balance, j + 1);
+                } else {
+                    maxLen = Math.max(maxLen, j + 1 - firstOccurrence.get(balance));
+                }
+                j++;
+            }
+            i = j;
+        }
+
+        return maxLen;
+    }
+}
+
+
