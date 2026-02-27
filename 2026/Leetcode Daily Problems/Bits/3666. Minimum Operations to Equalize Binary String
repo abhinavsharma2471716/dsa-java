@@ -1,0 +1,199 @@
+You are given a binary string s, and an integer k.
+
+In one operation, you must choose exactly k different indices and flip each '0' to '1' and each '1' to '0'.
+
+Return the minimum number of operations required to make all characters in the string equal to '1'. If it is not possible, return -1.
+
+ 
+
+Example 1:
+
+Input: s = "110", k = 1
+
+Output: 1
+
+Explanation:
+
+There is one '0' in s.
+Since k = 1, we can flip it directly in one operation.
+Example 2:
+
+Input: s = "0101", k = 3
+
+Output: 2
+
+Explanation:
+
+One optimal set of operations choosing k = 3 indices in each operation is:
+
+Operation 1: Flip indices [0, 1, 3]. s changes from "0101" to "1000".
+Operation 2: Flip indices [1, 2, 3]. s changes from "1000" to "1111".
+Thus, the minimum number of operations is 2.
+
+Example 3:
+
+Input: s = "101", k = 2
+
+Output: -1
+
+Explanation:
+
+Since k = 2 and s has only one '0', it is impossible to flip exactly k indices to make all '1'. Hence, the answer is -1.
+
+ 
+
+Constraints:
+
+1 <= s.length <= 10​​​​​​​^5
+s[i] is either '0' or '1'.
+
+
+Code:
+
+Approach 1: //O(n^2) - not accepted
+
+class Solution {
+    public int minOperations(String s, int k) {
+
+        int length = s.length();
+
+        // Count initial number of zeros
+        int zeroCount = 0;
+        for (int i = 0; i < length; i++) {
+            if (s.charAt(i) == '0') {
+                zeroCount++;
+            }
+        }
+
+        // If already no zeros, no operation needed
+        if (zeroCount == 0) {
+            return 0;
+        }
+
+        // Distance array for BFS (minimum operations to reach a zero count)
+        int[] steps = new int[length + 1];
+        Arrays.fill(steps, -1);
+
+        Queue<Integer> bfsQueue = new LinkedList<>();
+        bfsQueue.offer(zeroCount);
+        steps[zeroCount] = 0;
+
+        while (!bfsQueue.isEmpty()) {
+
+            int currentZeros = bfsQueue.poll();
+
+            /*
+             We choose 'flipZeros' zeros among k selected characters.
+             Valid range ensures we don't pick more zeros than available
+             and don't exceed string limits.
+            */
+            int minFlip = Math.max(0, k - (length - currentZeros));
+            int maxFlip = Math.min(k, currentZeros);
+
+            for (int flipZeros = minFlip; flipZeros <= maxFlip; flipZeros++) {
+
+                int updatedZeros = currentZeros + k - (2 * flipZeros);
+
+                if (steps[updatedZeros] == -1) {
+                    steps[updatedZeros] = steps[currentZeros] + 1;
+
+                    if (updatedZeros == 0) {
+                        return steps[updatedZeros];
+                    }
+
+                    bfsQueue.offer(updatedZeros);
+                }
+            }
+        }
+
+        // If it's impossible to make all characters '1'
+        return -1;
+    }
+}
+
+Approach 2 : //O(nlogn) 
+
+
+class Solution {
+    public int minOperations(String s, int k) {
+
+        int length = s.length();
+
+        // Step 1: Count initial zeros
+        int zeroCount = 0;
+        for (int i = 0; i < length; i++) {
+            if (s.charAt(i) == '0') {
+                zeroCount++;
+            }
+        }
+
+        if (zeroCount == 0) {
+            return 0;
+        }
+
+        // Distance array (minimum operations to reach zero count)
+        int[] steps = new int[length + 1];
+        Arrays.fill(steps, -1);
+
+        // Separate unvisited states by parity
+        TreeSet<Integer> evenCounts = new TreeSet<>();
+        TreeSet<Integer> oddCounts = new TreeSet<>();
+
+        for (int count = 0; count <= length; count++) {
+            if ((count & 1) == 0) {
+                evenCounts.add(count);
+            } else {
+                oddCounts.add(count);
+            }
+        }
+
+        Queue<Integer> bfsQueue = new LinkedList<>();
+        bfsQueue.offer(zeroCount);
+        steps[zeroCount] = 0;
+
+        // Remove starting state from available pool
+        if ((zeroCount & 1) == 0) {
+            evenCounts.remove(zeroCount);
+        } else {
+            oddCounts.remove(zeroCount);
+        }
+
+        while (!bfsQueue.isEmpty()) {
+
+            int currentZeros = bfsQueue.poll();
+
+            /*
+               Instead of iterating over all possible flips,
+               directly compute the reachable range of new zero counts.
+            */
+
+            int minReach = currentZeros + k - 2 * Math.min(k, currentZeros);
+            int maxReach = currentZeros + k - 2 * Math.max(0, k - (length - currentZeros));
+
+            // Choose correct parity set
+            TreeSet<Integer> targetSet =
+                    (minReach % 2 == 0) ? evenCounts : oddCounts;
+
+            Integer candidate = targetSet.ceiling(minReach);
+
+            while (candidate != null && candidate <= maxReach) {
+
+                int nextZeros = candidate;
+
+                steps[nextZeros] = steps[currentZeros] + 1;
+
+                if (nextZeros == 0) {
+                    return steps[nextZeros];
+                }
+
+                bfsQueue.offer(nextZeros);
+                targetSet.remove(candidate);
+
+                candidate = targetSet.ceiling(minReach);
+            }
+        }
+
+        return -1;
+    }
+}
+1 <= k <= s.length
