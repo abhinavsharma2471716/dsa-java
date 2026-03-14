@@ -1,0 +1,107 @@
+A happy string is a string that:
+
+consists only of letters of the set ['a', 'b', 'c'].
+s[i] != s[i + 1] for all values of i from 1 to s.length - 1 (string is 1-indexed).
+For example, strings "abc", "ac", "b" and "abcbabcbcb" are all happy strings and strings "aa", "baa" and "ababbc" are not happy strings.
+
+Given two integers n and k, consider a list of all happy strings of length n sorted in lexicographical order.
+
+Return the kth string of this list or return an empty string if there are less than k happy strings of length n.
+
+ 
+
+Example 1:
+
+Input: n = 1, k = 3
+Output: "c"
+Explanation: The list ["a", "b", "c"] contains all happy strings of length 1. The third string is "c".
+Example 2:
+
+Input: n = 1, k = 4
+Output: ""
+Explanation: There are only 3 happy strings of length 1.
+Example 3:
+
+Input: n = 3, k = 9
+Output: "cab"
+Explanation: There are 12 different happy string of length 3 ["aba", "abc", "aca", "acb", "bab", "bac", "bca", "bcb", "cab", "cac", "cba", "cbc"]. You will find the 9th string = "cab"
+ 
+
+Constraints:
+
+1 <= n <= 10
+1 <= k <= 100
+
+Code :
+
+class Solution {
+    // Keeps track of how many valid happy strings we have generated so far
+    private int count = 0;
+
+    // Stores the k-th happy string once found
+    private String result = "";
+
+    public String getHappyString(int n, int k) {
+        // Start backtracking with empty string and no previous character
+        backtrack(n, k, new StringBuilder(), ' ');
+        return result;
+    }
+
+    private void backtrack(int n, int k, StringBuilder sb, char lastChar) {
+
+        // If the current string length becomes n, we formed a valid happy string
+        if (sb.length() == n) {
+            count++; // increment the count of happy strings
+
+            // If this is the k-th happy string, store it
+            if (count == k) {
+                result = sb.toString();
+            }
+            return;
+        }
+
+        // Try placing each character 'a', 'b', 'c'
+        for (char ch : new char[]{'a', 'b', 'c'}) {
+
+            // Only place the character if it is different from the last character
+            if (ch != lastChar) {
+
+                // Choose
+                sb.append(ch);
+
+                // Explore further with this character
+                backtrack(n, k, sb, ch);
+
+                // Undo the choice (backtrack)
+                sb.deleteCharAt(sb.length() - 1);
+
+                // If result is already found, stop further recursion
+                if (!result.isEmpty()) return;
+            }
+        }
+    }
+}
+
+
+Time Complexity:
+
+Let n = length of the string.
+At each position:
+We can choose 2 characters (since it cannot be equal to the previous character).
+Total number of happy strings of length n:
+(3×2^n−1)
+
+Explanation:
+
+First position → 3 choices (a,b,c)
+
+Remaining (n-1) positions → 2 choices each
+
+So the backtracking explores at most:
+
+O(3×2^n−1)≈O(2n)
+Final Time Complexity
+
+O(2ⁿ)
+
+(Stops early if the k-th string is found)
