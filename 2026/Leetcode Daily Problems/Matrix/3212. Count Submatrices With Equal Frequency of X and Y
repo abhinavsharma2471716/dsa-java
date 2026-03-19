@@ -1,0 +1,130 @@
+Given a 2D character matrix grid, where grid[i][j] is either 'X', 'Y', or '.', return the number of submatrices that contain:
+
+grid[0][0]
+an equal frequency of 'X' and 'Y'.
+at least one 'X'.
+ 
+
+Example 1:
+
+Input: grid = [["X","Y","."],["Y",".","."]]
+
+Output: 3
+
+Explanation:
+
+
+
+Example 2:
+
+Input: grid = [["X","X"],["X","Y"]]
+
+Output: 0
+
+Explanation:
+
+No submatrix has an equal frequency of 'X' and 'Y'.
+
+Example 3:
+
+Input: grid = [[".","."],[".","."]]
+
+Output: 0
+
+Explanation:
+
+No submatrix has at least one 'X'.
+
+ 
+
+Constraints:
+
+1 <= grid.length, grid[i].length <= 1000
+grid[i][j] is either 'X', 'Y', or '.'.
+
+
+Code: // O(m*n)
+
+class Solution {
+    public int numberOfSubmatrices(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        
+        // Prefix sums to store the number of 'X' and 'Y' up to (i, j)
+        int[][] xPrefix = new int[m + 1][n + 1];
+        int[][] yPrefix = new int[m + 1][n + 1];
+
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                xPrefix[i][j] = xPrefix[i - 1][j] + xPrefix[i][j - 1] - xPrefix[i - 1][j - 1] + (grid[i - 1][j - 1] == 'X' ? 1 : 0);
+                yPrefix[i][j] = yPrefix[i - 1][j] + yPrefix[i][j - 1] - yPrefix[i - 1][j - 1] + (grid[i - 1][j - 1] == 'Y' ? 1 : 0);
+            }
+        }
+
+        int count = 0;
+
+        // Iterate over all possible submatrices starting from (0,0)
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                int xCount = xPrefix[i][j];
+                int yCount = yPrefix[i][j];
+                
+                if (xCount == yCount && xCount > 0) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+}
+
+Extra Note:
+
+You are using 2D prefix sums to quickly compute counts of 'X' and 'Y' in any submatrix.
+
+ What is stored?
+
+xPrefix[i][j] → number of 'X' in rectangle from (0,0) to (i-1,j-1)
+
+yPrefix[i][j] → number of 'Y' in same rectangle
+
+ Prefix Formula
+
+For each cell:
+
+prefix[i][j] =
+    top +
+    left -
+    overlap +
+    current_cell_value
+
+So:
+
+xPrefix[i][j] = xPrefix[i - 1][j] 
+              + xPrefix[i][j - 1] 
+              - xPrefix[i - 1][j - 1] 
+              + (grid[i - 1][j - 1] == 'X' ? 1 : 0);
+
+Same logic for yPrefix.
+
+
+Since all submatrices must start at (0,0):
+
+ Any submatrix is uniquely identified by its bottom-right corner (i, j)
+
+So instead of checking all possible submatrices:
+
+✔ Just iterate over all (i, j)
+✔ Get counts directly from prefix arrays
+
+ Counting Valid Submatrices
+int xCount = xPrefix[i][j];
+int yCount = yPrefix[i][j];
+
+Condition:
+
+if (xCount == yCount && xCount > 0)
+
+✔ Equal number of X and Y
+✔ At least one X (ensures non-empty meaningful case)
