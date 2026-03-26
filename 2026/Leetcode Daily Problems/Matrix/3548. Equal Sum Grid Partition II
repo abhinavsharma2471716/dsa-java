@@ -5,7 +5,7 @@ The sum of elements in both sections is equal, or can be made equal by discounti
 If a cell is discounted, the rest of the section must remain connected.
 Return true if such a partition exists; otherwise, return false.
 
-Note: A section is connected if every cell in it can be reached from any other cell by moving up, down, left, or right through other cells in the section.
+Note: A section is connected if every cell in it can be reached from any other cell by moving up, down, left, or right through other cells in the section. 
 
  
 
