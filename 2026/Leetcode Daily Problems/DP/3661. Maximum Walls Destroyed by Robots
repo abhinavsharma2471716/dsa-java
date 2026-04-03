@@ -1,0 +1,156 @@
+There is an endless straight line populated with some robots and walls. You are given integer arrays robots, distance, and walls:
+robots[i] is the position of the ith robot.
+distance[i] is the maximum distance the ith robot's bullet can travel.
+walls[j] is the position of the jth wall.
+Every robot has one bullet that can either fire to the left or the right at most distance[i] meters.
+
+A bullet destroys every wall in its path that lies within its range. Robots are fixed obstacles: if a bullet hits another robot before reaching a wall, it immediately stops at that robot and cannot continue.
+
+Return the maximum number of unique walls that can be destroyed by the robots.
+
+Notes:
+
+A wall and a robot may share the same position; the wall can be destroyed by the robot at that position.
+Robots are not destroyed by bullets.
+ 
+
+Example 1:
+
+Input: robots = [4], distance = [3], walls = [1,10]
+
+Output: 1
+
+Explanation:
+
+robots[0] = 4 fires left with distance[0] = 3, covering [1, 4] and destroys walls[0] = 1.
+Thus, the answer is 1.
+Example 2:
+
+Input: robots = [10,2], distance = [5,1], walls = [5,2,7]
+
+Output: 3
+
+Explanation:
+
+robots[0] = 10 fires left with distance[0] = 5, covering [5, 10] and destroys walls[0] = 5 and walls[2] = 7.
+robots[1] = 2 fires left with distance[1] = 1, covering [1, 2] and destroys walls[1] = 2.
+Thus, the answer is 3.
+Example 3:
+Input: robots = [1,2], distance = [100,1], walls = [10]
+
+Output: 0
+
+Explanation:
+
+In this example, only robots[0] can reach the wall, but its shot to the right is blocked by robots[1]; thus the answer is 0.
+
+ 
+
+Constraints:
+
+1 <= robots.length == distance.length <= 10^5
+1 <= walls.length <= 10^5
+1 <= robots[i], walls[j] <= 10^9
+1 <= distance[i] <= 10^5
+All values in robots are unique
+
+Code: O(nlogn+mlogm+nlogm)
+
+class Solution {
+    public int maxWalls(int[] robots, int[] distance, int[] walls) {
+        int n = robots.length;
+        // left[i]  -> walls destroyed if robot i shoots LEFT
+        // right[i] -> walls destroyed if robot i shoots RIGHT
+        // overlap[i] -> walls between robot[i-1] and robot[i]
+        int[] left = new int[n];
+        int[] right = new int[n];
+        int[] overlap = new int[n];
+        // Map robot position -> distance
+        Map<Integer, Integer> robotDist = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            robotDist.put(robots[i], distance[i]);
+        }
+        Arrays.sort(robots);
+        Arrays.sort(walls);
+        for (int i = 0; i < n; i++) {
+            int pos = robots[i];
+            int d = robotDist.get(pos);
+            // First wall strictly greater than current robot
+            int rightStartIdx = upperBound(walls, pos);
+            // ---------------- LEFT RANGE ----------------
+            int leftStartIdx;
+            if (i > 0) {
+                // Cannot cross previous robot
+                int leftLimit = Math.max(pos - d, robots[i - 1] + 1);
+                leftStartIdx = lowerBound(walls, leftLimit);
+            } else {
+                leftStartIdx = lowerBound(walls, pos - d);
+            }
+            // walls in [leftLimit, pos]
+            left[i] = rightStartIdx - leftStartIdx;
+            // ---------------- RIGHT RANGE ----------------
+            int rightEndIdx;
+            if (i < n - 1) {
+                // Cannot cross next robot
+                int rightLimit = Math.min(pos + d, robots[i + 1] - 1);
+                rightEndIdx = upperBound(walls, rightLimit);
+            } else {
+                rightEndIdx = upperBound(walls, pos + d);
+            }
+            int rightStart = lowerBound(walls, pos);
+            // walls in [pos, rightLimit]
+            right[i] = rightEndIdx - rightStart;
+            // ---------------- OVERLAP ----------------
+            // walls between previous robot and current robot
+            if (i > 0) {
+                int prevStart = lowerBound(walls, robots[i - 1]);
+                overlap[i] = rightStartIdx - prevStart;
+            }
+        }
+        // DP states:
+        // takeLeft  -> max walls till i if current robot shoots LEFT
+        // takeRight -> max walls till i if current robot shoots RIGHT
+        int takeLeft = left[0];
+        int takeRight = right[0];
+        for (int i = 1; i < n; i++) {
+            // Case 1: current robot shoots LEFT
+            int newLeft = Math.max(
+                // previous also LEFT
+                takeLeft + left[i],
+                // previous was RIGHT → handle overlap correction
+                takeRight
+                    - right[i - 1] // remove previous right count
+                    + Math.min(left[i] + right[i - 1], overlap[i]) // add valid merged coverage
+            );
+            // Case 2: current robot shoots RIGHT
+            int newRight = Math.max(
+                takeLeft + right[i],  // previous LEFT
+                takeRight + right[i]  // previous RIGHT
+            );
+            takeLeft = newLeft;
+            takeRight = newRight;
+        }
+        return Math.max(takeLeft, takeRight);
+    }
+    // First index >= target
+    private int lowerBound(int[] arr, int target) {
+        int l = 0, r = arr.length;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (arr[mid] < target) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+    // First index > target
+    private int upperBound(int[] arr, int target) {
+        int l = 0, r = arr.length;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (arr[mid] <= target) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+}
+All values in walls are unique
