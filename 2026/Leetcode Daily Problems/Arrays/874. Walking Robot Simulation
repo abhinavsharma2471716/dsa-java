@@ -1,0 +1,208 @@
+A robot on an infinite XY-plane starts at point (0, 0) facing north. The robot receives an array of integers commands, which represents a sequence of moves that it needs to execute. There are only three possible types of instructions the robot can receive:
+
+-2: Turn left 90 degrees.
+-1: Turn right 90 degrees.
+1 <= k <= 9: Move forward k units, one unit at a time.
+Some of the grid squares are obstacles. The ith obstacle is at grid point obstacles[i] = (xi, yi). If the robot runs into an obstacle, it will stay in its current location (on the block adjacent to the obstacle) and move onto the next command.
+
+Return the maximum squared Euclidean distance that the robot reaches at any point in its path (i.e. if the distance is 5, return 25).
+
+Note:
+
+There can be an obstacle at (0, 0). If this happens, the robot will ignore the obstacle until it has moved off the origin. However, it will be unable to return to (0, 0) due to the obstacle.
+North means +Y direction.
+East means +X direction.
+South means -Y direction.
+West means -X direction.
+ 
+
+Example 1:
+
+Input: commands = [4,-1,3], obstacles = []
+
+Output: 25
+
+Explanation:
+
+The robot starts at (0, 0):
+
+Move north 4 units to (0, 4).
+Turn right.
+Move east 3 units to (3, 4).
+The furthest point the robot ever gets from the origin is (3, 4), which squared is 32 + 42 = 25 units away.
+
+Example 2:
+
+Input: commands = [4,-1,4,-2,4], obstacles = [[2,4]]
+
+Output: 65
+
+Explanation:
+
+The robot starts at (0, 0):
+
+Move north 4 units to (0, 4).
+Turn right.
+Move east 1 unit and get blocked by the obstacle at (2, 4), robot is at (1, 4).
+Turn left.
+Move north 4 units to (1, 8).
+The furthest point the robot ever gets from the origin is (1, 8), which squared is 12 + 82 = 65 units away.
+
+Example 3:
+
+Input: commands = [6,-1,-1,6], obstacles = [[0,0]]
+
+Output: 36
+
+Explanation:
+
+The robot starts at (0, 0):
+
+Move north 6 units to (0, 6).
+Turn right.
+Turn right.
+Move south 5 units and get blocked by the obstacle at (0,0), robot is at (0, 1).
+The furthest point the robot ever gets from the origin is (0, 6), which squared is 62 = 36 units away.
+
+ 
+
+Constraints:
+
+1 <= commands.length <= 10^4
+commands[i] is either -2, -1, or an integer in the range [1, 9].
+0 <= obstacles.length <= 10^4
+-3 * 10^4 <= xi, yi <= 3 * 10^4
+The answer is guaranteed to be less than 2^31.
+
+Code: 
+
+Approach 1: // O(k+S⋅k)
+/*
+Building map → O(k)
+Movement loop → O(S) steps
+Obstacle check (contains on list) → O(k) worst case
+
+Overall:
+
+Worst case: O(k + S·k)
+*/
+
+class Solution {
+    public int robotSim(int[] commands, int[][] obstacles) {
+        HashMap<Integer, List<Integer>> map = new HashMap<>();
+        for (int[] obstacle : obstacles) {
+            int u = obstacle[0];
+            int v = obstacle[1];
+            map.computeIfAbsent(u, k -> new ArrayList<>()).add(v);
+        }
+
+        // Directions: {right, up, left, down}
+        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        int x = 0, y = 0;  // Robot's starting position
+        int dirIndex = 1;  // Initially facing up (y direction)
+        int maxDistance = 0;
+
+        for (int command : commands) {
+            if (command == -1) {
+                // Turn right
+                dirIndex = (dirIndex + 3) % 4;
+            } else if (command == -2) {
+                // Turn left
+                dirIndex = (dirIndex + 1) % 4;
+            } else {
+                // Move forward by 'command' steps
+                for (int j = 0; j < command; j++) {
+                    int nextX = x + directions[dirIndex][0];
+                    int nextY = y + directions[dirIndex][1];
+
+                    // Check if the next position is an obstacle
+                    if (map.containsKey(nextX) && map.get(nextX).contains(nextY)) {
+                        break;  // Stop moving if the next position is an obstacle
+                    }
+
+                    // Update the robot's position
+                    x = nextX;
+                    y = nextY;
+                    maxDistance = Math.max(maxDistance, x * x + y * y);
+                }
+            }
+        }
+
+        return maxDistance;
+    }
+}
+
+
+Approach 2:
+
+/*
+n = commands.length
+k = obstacles.length
+S = total steps moved (sum of all forward commands)
+
+Breakdown
+Building HashSet → O(k)
+Processing commands:
+Turns → O(1)
+Movement → O(S)
+Obstacle check (set.contains) → O(1)
+Final : O(k+S)
+	
+*/
+
+class Solution {
+    public int robotSim(int[] commands, int[][] obstacles) {
+        
+        // Store all obstacle positions in a HashSet for O(1) lookup
+        HashSet<String> set = new HashSet<>();
+        for (int[] o : obstacles) {
+            set.add(o[0] + "," + o[1]); // encode (x, y) as string
+        }
+
+        // दिशा vectors: up, right, down, left
+        int[][] directions = {
+            {0, 1},   // up
+            {1, 0},   // right
+            {0, -1},  // down
+            {-1, 0}   // left
+        };
+
+        int dir = 0; // start facing up
+        int x = 0, y = 0; // starting position
+        int maxDist = 0;  // store max distance squared
+
+        // Process each command
+        for (int cmd : commands) {
+
+            if (cmd == -1) {
+                // Turn right (clockwise)
+                dir = (dir + 1) % 4;
+
+            } else if (cmd == -2) {
+                // Turn left (anti-clockwise)
+                dir = (dir + 3) % 4;
+
+            } else {
+                // Move forward step by step
+                for (int i = 0; i < cmd; i++) {
+
+                    // Calculate next position
+                    int nx = x + directions[dir][0];
+                    int ny = y + directions[dir][1];
+
+                    // If next position is an obstacle → stop moving
+                    if (set.contains(nx + "," + ny)) break;
+
+                    // Otherwise, move to next position
+                    x = nx;
+                    y = ny;
+
+                    // Update maximum distance from origin (0,0)
+                    maxDist = Math.max(maxDist, x * x + y * y);
+                }
+            }
+        }
+
+        return maxDist;
+    }
+}
