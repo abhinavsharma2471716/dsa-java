@@ -1,0 +1,123 @@
+You are given an integer side, representing the edge length of a square with corners at (0, 0), (0, side), (side, 0), and (side, side) on a Cartesian plane.
+
+You are also given a positive integer k and a 2D integer array points, where points[i] = [xi, yi] represents the coordinate of a point lying on the boundary of the square.
+
+You need to select k elements among points such that the minimum Manhattan distance between any two points is maximized.
+
+Return the maximum possible minimum Manhattan distance between the selected k points.
+
+The Manhattan Distance between two cells (xi, yi) and (xj, yj) is |xi - xj| + |yi - yj|.
+
+ 
+
+Example 1:
+
+Input: side = 2, points = [[0,2],[2,0],[2,2],[0,0]], k = 4
+
+Output: 2
+
+Explanation:
+
+
+
+Select all four points.
+
+Example 2:
+
+Input: side = 2, points = [[0,0],[1,2],[2,0],[2,2],[2,1]], k = 4
+
+Output: 1
+
+Explanation:
+
+
+
+Select the points (0, 0), (2, 0), (2, 2), and (2, 1).
+
+Example 3:
+
+Input: side = 2, points = [[0,0],[0,1],[0,2],[1,2],[2,0],[2,2],[2,1]], k = 5
+
+Output: 1
+
+Explanation:
+
+
+
+Select the points (0, 0), (0, 1), (0, 2), (1, 2), and (2, 2).
+
+ 
+
+Constraints:
+
+1 <= side <= 10^9
+4 <= points.length <= min(4 * side, 15 * 10^3)
+points[i] == [xi, yi]
+The input is generated such that:
+points[i] lies on the boundary of the square.
+All points[i] are unique.
+4 <= k <= min(25, points.length)
+
+Code: //T.C : O(log(side)⋅n⋅klogn)
+
+
+class Solution {
+    public int maxDistance(int side, int[][] points, int k) {
+        List<Long> pos = new ArrayList<>();
+        // Step 1: convert (x, y) → 1D position on boundary
+        for (int[] p : points) {
+            int x = p[0], y = p[1];
+            if (x == 0) pos.add((long) y);                  // left
+            else if (y == side) pos.add((long)side + x);          // top
+            else if (x == side) pos.add(3L * side - y);     // right
+            else pos.add(4L * side - x);                    // bottom
+        }
+        Collections.sort(pos);
+        long low = 1, high = side;
+        int ans = 0;
+        // Step 2: binary search
+        while (low <= high) {
+            long mid = (low + high) / 2;
+            if (canPick(pos, side, k, mid)) {
+                ans = (int) mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return ans;
+    }
+
+    // check if we can pick k points with min gap = dist
+    private boolean canPick(List<Long> pos, int side, int k, long dist) {
+        long perimeter = 4L * side;
+        for (long start : pos) {
+            long last = start;
+            long limit = start + perimeter - dist;
+            int count = 1;
+            for (int i = 0; i < k - 1; i++) {
+                int idx = lowerBound(pos, last + dist);
+                if (idx == pos.size() || pos.get(idx) > limit) {
+                    count = 0;
+                    break;
+                }
+                last = pos.get(idx);
+                count++;
+            }
+            if (count == k) return true;
+        }
+        return false;
+    }
+
+    // first index where value >= target
+    private int lowerBound(List<Long> list, long target) {
+        int l = 0, r = list.size();
+
+        while (l < r) {
+            int m = (l + r) / 2;
+            if (list.get(m) < target) l = m + 1;
+            else r = m;
+        }
+        return l;
+    }
+}
