@@ -1,0 +1,51 @@
+Given the head of a linked list, rotate the list to the right by k places.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,2,3,4,5], k = 2
+Output: [4,5,1,2,3]
+Example 2:
+
+
+Input: head = [0,1,2], k = 4
+Output: [2,0,1]
+ 
+
+Constraints:
+
+The number of nodes in the list is in the range [0, 500].
+-100 <= Node.val <= 100
+0 <= k <= 2 * 10^9
+
+Code: // O(n)
+
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null || k == 0) {
+            return head;
+        }
+        // Step 1: Find size
+        int size = 1;
+        ListNode tail = head;
+        while (tail.next != null) {
+            tail = tail.next;
+            size++;
+        }
+        // Step 2: Make it circular
+        tail.next = head;
+        // Step 3: Find new tail
+        k = k % size;
+        int stepsToNewTail = size - k;
+        ListNode newTail = head;
+        for (int i = 1; i < stepsToNewTail; i++) {
+            newTail = newTail.next;
+        }
+        // Step 4: Break the circle
+        ListNode newHead = newTail.next;
+        newTail.next = null;
+        return newHead;
+    }
+}
