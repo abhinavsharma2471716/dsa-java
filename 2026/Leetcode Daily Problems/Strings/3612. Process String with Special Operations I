@@ -47,7 +47,16 @@ Constraints:
 1 <= s.length <= 20
 s consists of only lowercase English letters and special characters *, #, and %.
 
-Code : // O(n)
+Code :
+
+/*
+Time Complexity: O(N), where N is the length of the final processed string.
+
+append(c) → O(1)
+deleteCharAt(last) → O(1)
+append(sb.toString()) (#) → O(current length)
+reverse() (%) → O(current length)
+*/
 
 Approach 1:
 
