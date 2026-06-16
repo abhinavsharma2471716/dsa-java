@@ -1,0 +1,112 @@
+You are given a string s consisting of lowercase English letters and the special characters: *, #, and %.
+
+Build a new string result by processing s according to the following rules from left to right:
+
+If the letter is a lowercase English letter append it to result.
+A '*' removes the last character from result, if it exists.
+A '#' duplicates the current result and appends it to itself.
+A '%' reverses the current result.
+Return the final string result after processing all characters in s.
+
+ 
+
+Example 1:
+
+Input: s = "a#b%*"
+
+Output: "ba"
+
+Explanation:
+
+i	s[i]	Operation	Current result
+0	'a'	Append 'a'	"a"
+1	'#'	Duplicate result	"aa"
+2	'b'	Append 'b'	"aab"
+3	'%'	Reverse result	"baa"
+4	'*'	Remove the last character	"ba"
+Thus, the final result is "ba".
+
+Example 2:
+
+Input: s = "z*#"
+
+Output: ""
+
+Explanation:
+
+i	s[i]	Operation	Current result
+0	'z'	Append 'z'	"z"
+1	'*'	Remove the last character	""
+2	'#'	Duplicate the string	""
+Thus, the final result is "".
+
+ 
+
+Constraints:
+
+1 <= s.length <= 20
+s consists of only lowercase English letters and special characters *, #, and %.
+
+Code : // O(n)
+
+Approach 1:
+
+class Solution {
+    public String processStr(String s) {
+        StringBuilder sb = new StringBuilder();
+
+        for (char c : s.toCharArray()) {
+            if (c == '*') {
+                if (sb.length() != 0) {
+                    sb.deleteCharAt(sb.length() - 1);  // remove last character
+                }
+            } else if (c == '#') {
+                sb.append(sb.toString());  // duplicate the string
+            } else if (c == '%') {
+                sb.reverse();  // reverse in-place
+            } else {
+                sb.append(c);  // append normal characters
+            }
+        }
+
+        return sb.toString();
+    }
+}
+
+
+Approach 2:
+
+class Solution {
+    public String processStr(String s) {
+        StringBuilder result = new StringBuilder();
+
+        for (char ch : s.toCharArray()) {
+            switch (ch) {
+
+                case '*':
+                    if (result.length() > 0) {
+                        // Simulate backspace
+                        result.deleteCharAt(result.length() - 1);
+                    }
+                    break;
+
+                case '#':
+                    // Duplicate the current content
+                    result.append(result);
+                    break;
+
+                case '%':
+                    // Reverse the current string
+                    result.reverse();
+                    break;
+
+                default:
+                    // Append regular characters
+                    result.append(ch);
+                    break;
+            }
+        }
+
+        return result.toString();
+    }
+}
