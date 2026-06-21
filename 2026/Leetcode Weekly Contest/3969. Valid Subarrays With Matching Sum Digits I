@@ -1,0 +1,76 @@
+You are given an integer array nums and an integer digit x.
+
+A subarray nums[l..r] is considered valid if the sum of its elements satisfies both of the following conditions:
+
+The first digit of the sum is equal to x.
+The last digit of the sum is equal to x.
+Return the number of valid subarrays.
+
+ 
+
+Example 1:
+
+Input: nums = [1,100,1], x = 1
+
+Output: 4
+
+Explanation:
+
+The valid subarrays are:
+
+nums[0..0]: sum = 1
+nums[0..1]: sum = 1 + 100 = 101
+nums[1..2]: sum = 100 + 1 = 101
+nums[2..2]: sum = 1
+Thus, the answer is 4.
+
+Example 2:
+
+Input: nums = [1], x = 2
+
+Output: 0
+
+Explanation:
+
+The only subarray is nums[0..0] with a sum of 1, which does not satisfy the conditions.
+
+Thus, the answer is 0.
+
+ 
+
+Constraints:
+
+1 <= nums.length <= 1500
+1 <= nums[i] <= 10^9
+1 <= x <= 9
+
+Code: // O(n+m)
+
+class Solution {
+    public int countValidSubarrays(int[] nums, int x) {
+        int n = nums.length;
+        long[] prefix = new long[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        int ans = 0;
+        for (int l = 0; l < n; l++) {
+            for (int r = l; r < n; r++) {
+                long sum = prefix[r + 1] - prefix[l];
+                // last digit
+                if (sum % 10 != x) {
+                    continue;
+                }
+                // first digit
+                long first = sum;
+                while (first >= 10) {
+                    first /= 10;
+                }
+                if (first == x) {
+                    ans++;
+                }
+            }
+        }
+        return ans;
+    }
+}
