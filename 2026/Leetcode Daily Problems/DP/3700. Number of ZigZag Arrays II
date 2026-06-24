@@ -1,0 +1,157 @@
+You are given three integers n, l, and r.
+
+A ZigZag array of length n is defined as follows:
+
+Each element lies in the range [l, r].
+No two adjacent elements are equal.
+No three consecutive elements form a strictly increasing or strictly decreasing sequence.
+Return the total number of valid ZigZag arrays.
+
+Since the answer may be large, return it modulo 109 + 7.
+
+A sequence is said to be strictly increasing if each element is strictly greater than its previous one (if exists).
+
+A sequence is said to be strictly decreasing if each element is strictly smaller than its previous one (if exists).
+
+ 
+
+Example 1:
+
+Input: n = 3, l = 4, r = 5
+
+Output: 2
+
+Explanation:
+
+There are only 2 valid ZigZag arrays of length n = 3 using values in the range [4, 5]:
+
+[4, 5, 4]
+[5, 4, 5]
+Example 2:
+
+Input: n = 3, l = 1, r = 3
+
+Output: 10
+
+Explanation:
+
+​​​​​​​There are 10 valid ZigZag arrays of length n = 3 using values in the range [1, 3]:
+
+[1, 2, 1], [1, 3, 1], [1, 3, 2]
+[2, 1, 2], [2, 1, 3], [2, 3, 1], [2, 3, 2]
+[3, 1, 2], [3, 1, 3], [3, 2, 3]
+All arrays meet the ZigZag conditions.
+
+ 
+
+Constraints:
+
+3 <= n <= 109
+1 <= l < r <= 75​​​​​​​
+
+Code: // O(m^3 log n)
+
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    public int zigZagArrays(int n, int l, int r) {
+        int m = r - l + 1;
+        int size = 2 * m;
+
+        long[] base = new long[size];
+
+        // Length = 2
+        for (int v = 0; v < m; v++) {
+            base[v] = v;                 // up[v]
+            base[m + v] = m - 1 - v;    // down[v]
+        }
+
+        long[][] T = new long[size][size];
+
+        // up[v] = sum(down[u]) for u < v
+        for (int v = 0; v < m; v++) {
+            for (int u = 0; u < v; u++) {
+                T[v][m + u] = 1;
+            }
+        }
+
+        // down[v] = sum(up[u]) for u > v
+        for (int v = 0; v < m; v++) {
+            for (int u = v + 1; u < m; u++) {
+                T[m + v][u] = 1;
+            }
+        }
+
+        long[] state = powerApply(T, n - 2, base);
+
+        long ans = 0;
+        for (long x : state) {
+            ans = (ans + x) % MOD;
+        }
+
+        return (int) ans;
+    }
+
+    private long[] powerApply(long[][] mat, long exp, long[] vec) {
+        int n = mat.length;
+
+        long[][] result = identity(n);
+
+        while (exp > 0) {
+            if ((exp & 1) == 1) {
+                result = multiply(result, mat);
+            }
+            mat = multiply(mat, mat);
+            exp >>= 1;
+        }
+
+        return multiply(result, vec);
+    }
+
+    private long[][] identity(int n) {
+        long[][] id = new long[n][n];
+        for (int i = 0; i < n; i++) {
+            id[i][i] = 1;
+        }
+        return id;
+    }
+
+    private long[][] multiply(long[][] A, long[][] B) {
+        int n = A.length;
+        long[][] C = new long[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int k = 0; k < n; k++) {
+                if (A[i][k] == 0) continue;
+
+                long a = A[i][k];
+
+                for (int j = 0; j < n; j++) {
+                    if (B[k][j] == 0) continue;
+
+                    C[i][j] = (C[i][j] + a * B[k][j]) % MOD;
+                }
+            }
+        }
+
+        return C;
+    }
+
+    private long[] multiply(long[][] A, long[] v) {
+        int n = A.length;
+        long[] res = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            long sum = 0;
+
+            for (int j = 0; j < n; j++) {
+                if (A[i][j] == 0) continue;
+                sum = (sum + A[i][j] * v[j]) % MOD;
+            }
+
+            res[i] = sum;
+        }
+
+        return res;
+    }
+}
