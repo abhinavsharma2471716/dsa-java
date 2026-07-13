@@ -1,0 +1,56 @@
+An integer has sequential digits if and only if each digit in the number is one more than the previous digit.
+
+Return a sorted list of all the integers in the range [low, high] inclusive that have sequential digits.
+
+ 
+
+Example 1:
+
+Input: low = 100, high = 300
+Output: [123,234]
+Example 2:
+
+Input: low = 1000, high = 13000
+Output: [1234,2345,3456,4567,5678,6789,12345]
+ 
+
+Constraints:
+
+10 <= low <= high <= 10^9
+
+Code:
+
+/*
+Start each number with digits 1 to 8. Repeatedly append the next consecutive digit (k) to build numbers like 12 → 123 → 1234 → .... 
+Whenever the generated number lies within the range [low, high], add it to the answer.
+Finally, sort the collected numbers since they are not generated in overall ascending order.
+
+Time Complexity
+Generation: O(1) (at most 36 sequential-digit numbers can ever be generated)
+Sorting: O(36 log 36) = O(1)
+Overall: O(1)
+*/
+
+class Solution {
+    public List<Integer> sequentialDigits(int low, int high) {
+        List<Integer> list = new ArrayList<>();
+        for(int i=1;i<9;i++){
+            int k=i+1;
+            int n= i*10+k;
+             if(n>= low && n<= high){
+                    list.add(n);
+                }
+            k++;
+            while(n<=high && k<10){
+                n = n*10+k;
+                if(n>= low && n<= high){
+                    list.add(n);
+                }
+                k++;
+            }
+        }
+        Collections.sort(list);
+        return list;
+        
+    }
+}
