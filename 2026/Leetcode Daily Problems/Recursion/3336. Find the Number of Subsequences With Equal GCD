@@ -1,0 +1,100 @@
+You are given an integer array nums.
+
+Your task is to find the number of pairs of non-empty subsequences (seq1, seq2) of nums that satisfy the following conditions:
+
+The subsequences seq1 and seq2 are disjoint, meaning no index of nums is common between them.
+The GCD of the elements of seq1 is equal to the GCD of the elements of seq2.
+Return the total number of such pairs.
+
+Since the answer may be very large, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+Input: nums = [1,2,3,4]
+
+Output: 10
+
+Explanation:
+
+The subsequence pairs which have the GCD of their elements equal to 1 are:
+
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+([1, 2, 3, 4], [1, 2, 3, 4])
+Example 2:
+
+Input: nums = [10,20,30]
+
+Output: 2
+
+Explanation:
+
+The subsequence pairs which have the GCD of their elements equal to 10 are:
+
+([10, 20, 30], [10, 20, 30])
+([10, 20, 30], [10, 20, 30])
+Example 3:
+
+Input: nums = [1,1,1,1]
+
+Output: 50
+
+ 
+
+Constraints:
+
+1 <= nums.length <= 200
+1 <= nums[i] <= 200
+
+Code:
+
+/*
+The solution uses memoized DP with states (idx, g1, g2), giving at most n × 201 × 201 unique states. Each state makes three transitions and computes GCD in O(log 200) time, 
+so the overall time complexity is O(n × 201² × log 200), which simplifies to O(n) since 201 is a constant.
+*/
+
+class Solution {
+    int MOD = 1_000_000_007;
+    int[][][] memo;
+    int[] nums;
+    int n;
+    public int subsequencePairCount(int[] nums) {
+        this.nums = nums;
+        n = nums.length;
+        memo = new int[n + 1][201][201];
+        for (int i = 0; i <= n; i++) {
+            for (int j = 0; j <= 200; j++) {
+                Arrays.fill(memo[i][j], -1);
+            }
+        }
+        return dfs(0, 0, 0);
+    }
+    private int dfs(int idx, int g1, int g2) {
+        if (idx == n) {
+            return (g1 > 0 && g2 > 0 && g1 == g2) ? 1 : 0;
+        }
+        if (memo[idx][g1][g2] != -1)
+            return memo[idx][g1][g2];
+        long ans = 0;
+        // Ignore
+        ans += dfs(idx + 1, g1, g2);
+        // Put in seq1
+        ans += dfs(idx + 1, gcd(g1, nums[idx]), g2);
+        // Put in seq2
+        ans += dfs(idx + 1, g1, gcd(g2, nums[idx]));
+        return memo[idx][g1][g2] = (int)(ans % MOD);
+    }
+    private int gcd(int a, int b) {
+        if (a == 0) return b;
+        return gcd(b % a, a);
+    }
+}
