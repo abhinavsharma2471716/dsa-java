@@ -1,0 +1,132 @@
+You are given an integer array nums.
+
+A XOR triplet is defined as the XOR of three elements nums[i] XOR nums[j] XOR nums[k] where i <= j <= k.
+
+Return the number of unique XOR triplet values from all possible triplets (i, j, k).
+
+ 
+
+Example 1:
+
+Input: nums = [1,3]
+
+Output: 2
+
+Explanation:
+
+The possible XOR triplet values are:
+
+(0, 0, 0) → 1 XOR 1 XOR 1 = 1
+(0, 0, 1) → 1 XOR 1 XOR 3 = 3
+(0, 1, 1) → 1 XOR 3 XOR 3 = 1
+(1, 1, 1) → 3 XOR 3 XOR 3 = 3
+The unique XOR values are {1, 3}. Thus, the output is 2.
+
+Example 2:
+
+Input: nums = [6,7,8,9]
+
+Output: 4
+
+Explanation:
+
+The possible XOR triplet values are {6, 7, 8, 9}. Thus, the output is 4.
+
+ 
+
+Constraints:
+
+1 <= nums.length <= 1500
+1 <= nums[i] <= 1500
+
+Code:
+
+/*
+Let
+
+n = number of elements
+m = maximum element in nums
+L = smallest power of 2 greater than m
+
+Then:
+
+Building oneNumber = O(n)
+Building twoNumbers = O(n × L)
+Building threeNumbers = O(n × L)
+
+Overall:
+
+O(n×L)
+	​
+
+
+where
+
+L=2^ ( ⌈log(base2)(m+1) ⌉ )
+*/
+
+class Solution {
+    public int uniqueXorTriplets(int[] nums) {
+
+        // Find the maximum value in the array
+        int maxValue = 0;
+        for (int num : nums) {
+            maxValue = Math.max(maxValue, num);
+        }
+
+        // Find the smallest power of 2 greater than maxValue.
+        // All XOR results will lie in [0, xorLimit - 1].
+        int xorLimit = 1;
+        while (xorLimit <= maxValue) {
+            xorLimit <<= 1;
+        }
+
+        // oneNumber[x] = Can XOR value x be formed using exactly 1 number?
+        boolean[] oneNumber = new boolean[xorLimit];
+
+        // twoNumbers[x] = Can XOR value x be formed using exactly 2 numbers?
+        boolean[] twoNumbers = new boolean[xorLimit];
+
+        // threeNumbers[x] = Can XOR value x be formed using exactly 3 numbers?
+        boolean[] threeNumbers = new boolean[xorLimit];
+
+        // -------------------------
+        // Build XORs using 1 number
+        // -------------------------
+        for (int num : nums) {
+            oneNumber[num] = true;
+        }
+
+        // -------------------------
+        // Build XORs using 2 numbers
+        // -------------------------
+        for (int num : nums) {
+            for (int xorValue = 0; xorValue < xorLimit; xorValue++) {
+                if (oneNumber[xorValue]) {
+                    twoNumbers[xorValue ^ num] = true;
+                }
+            }
+        }
+
+        // -------------------------
+        // Build XORs using 3 numbers
+        // -------------------------
+        for (int num : nums) {
+            for (int xorValue = 0; xorValue < xorLimit; xorValue++) {
+                if (twoNumbers[xorValue]) {
+                    threeNumbers[xorValue ^ num] = true;
+                }
+            }
+        }
+
+        // Count distinct XOR values
+        int answer = 0;
+        for (boolean possible : threeNumbers) {
+            if (possible) {
+                answer++;
+            }
+        }
+
+        return answer;
+    }
+}
