@@ -1,0 +1,124 @@
+You are given a string num which represents a positive integer, and an integer t.
+
+A number is called zero-free if none of its digits are 0.
+
+Return a string representing the smallest zero-free number greater than or equal to num such that the product of its digits is divisible by t. If no such number exists, return "-1".
+
+ 
+
+Example 1:
+
+Input: num = "1234", t = 256
+
+Output: "1488"
+
+Explanation:
+
+The smallest zero-free number that is greater than 1234 and has the product of its digits divisible by 256 is 1488, with the product of its digits equal to 256.
+
+Example 2:
+
+Input: num = "12355", t = 50
+
+Output: "12355"
+
+Explanation:
+
+12355 is already zero-free and has the product of its digits divisible by 50, with the product of its digits equal to 150.
+
+Example 3:
+
+Input: num = "11111", t = 26
+
+Output: "-1"
+
+Explanation:
+
+No number greater than 11111 has the product of its digits divisible by 26.
+
+ 
+
+Constraints:
+
+2 <= num.length <= 2 * 10^5
+num consists only of digits in the range ['0', '9'].
+num does not contain leading zeros.
+1 <= t <= 10^14
+
+Code: // O(n^2 ⋅ logT) n = num.length() ; T = value of t
+
+class Solution {
+    public String smallestNumber(String num, long t) {
+        // Check if t contains any prime factor other than 2,3,5,7
+        long remainingFactor = t;
+        for (int digit = 2; digit <= 9; digit++) {
+            while (remainingFactor % digit == 0) {
+                remainingFactor /= digit;
+            }
+        }
+        if (remainingFactor > 1) {
+            return "-1";
+        }
+        int n = num.length();
+        // requiredFactor[i] = remaining factor of t after using digits [0...i-1]
+        long[] requiredFactor = new long[n + 1];
+        requiredFactor[0] = t;
+        // First position containing '0'
+        int firstZeroIndex = n - 1;
+        char[] digits = num.toCharArray();
+        // Process prefix until first zero
+        for (int i = 0; i < n; i++) {
+            if (digits[i] == '0') {
+                firstZeroIndex = i;
+                break;
+            }
+            requiredFactor[i + 1] = requiredFactor[i] / gcd(requiredFactor[i], digits[i] - '0');
+        }
+        // Already satisfies the condition
+        if (requiredFactor[n] == 1) {
+            return num;
+        }
+        // Try increasing digits from right to left
+        for (int i = firstZeroIndex; i >= 0; i--) {
+            while (++digits[i] <= '9') {
+                long currentNeed =  requiredFactor[i] / gcd(requiredFactor[i], digits[i] - '0');
+                int largestDigit = 9;
+                // Fill remaining suffix greedily
+                for (int j = n - 1; j > i; j--) {
+                    while (currentNeed % largestDigit != 0) {
+                        largestDigit--;
+                    }
+                    currentNeed /= largestDigit;
+                    digits[j] = (char) ('0' + largestDigit);
+                }
+                if (currentNeed == 1) {
+                    return new String(digits);
+                }
+            }
+        }
+        // Same length not possible, build answer of length n + 1
+        StringBuilder answer = new StringBuilder();
+        long remaining = t;
+        for (int digit = 9; digit > 1; digit--) {
+            while (remaining % digit == 0) {
+                answer.append((char) ('0' + digit));
+                remaining /= digit;
+            }
+        }
+        // Pad with leading 1's
+        int onesNeeded = Math.max(n + 1 - answer.length(), 0);
+        for (int i = 0; i < onesNeeded; i++) {
+            answer.append('1');
+        }
+        return answer.reverse().toString();
+    }
+    private long gcd(long a, long b) {
+        while (b != 0) {
+            long temp = b;
+            b = a % b;
+            a = temp;
+            temp = b;
+        }
+        return a;
+    }
+}
