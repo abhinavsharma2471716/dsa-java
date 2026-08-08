@@ -1,0 +1,127 @@
+You are given two strings word1 and word2.
+
+A string x is called almost equal to y if you can change at most one character in x to make it identical to y.
+
+A sequence of indices seq is called valid if:
+
+The indices are sorted in ascending order.
+Concatenating the characters at these indices in word1 in the same order results in a string that is almost equal to word2.
+Return an array of size word2.length representing the lexicographically smallest valid sequence of indices. If no such sequence of indices exists, return an empty array.
+
+Note that the answer must represent the lexicographically smallest array, not the corresponding string formed by those indices.
+
+ 
+
+Example 1:
+
+Input: word1 = "vbcca", word2 = "abc"
+
+Output: [0,1,2]
+
+Explanation:
+
+The lexicographically smallest valid sequence of indices is [0, 1, 2]:
+
+Change word1[0] to 'a'.
+word1[1] is already 'b'.
+word1[2] is already 'c'.
+Example 2:
+
+Input: word1 = "bacdc", word2 = "abc"
+
+Output: [1,2,4]
+
+Explanation:
+
+The lexicographically smallest valid sequence of indices is [1, 2, 4]:
+
+word1[1] is already 'a'.
+Change word1[2] to 'b'.
+word1[4] is already 'c'.
+Example 3:
+
+Input: word1 = "aaaaaa", word2 = "aaabc"
+
+Output: []
+
+Explanation:
+
+There is no valid sequence of indices.
+
+Example 4:
+
+Input: word1 = "abc", word2 = "ab"
+
+Output: [0,1]
+
+ 
+
+Constraints:
+
+1 <= word2.length < word1.length <= 3 * 10^5
+word1 and word2 consist only of lowercase English letters.
+
+Code : // O(n+m)
+/*
+Where:
+n = word1.length()
+m = word2.length()
+*/
+
+class Solution {
+    public int[] validSequence(String word1, String word2) {
+        int n = word1.length();
+        int m = word2.length();
+        // last[i] = index in word1 where word2[i] can be matched
+        // while matching word2 from right to left.
+        int[] last = new int[m];
+        Arrays.fill(last, -1);
+        int word2Index = m - 1;
+        // Find a subsequence of word2 from right to left.
+        for (int word1Index = n - 1;
+             word1Index >= 0 && word2Index >= 0;
+             word1Index--) {
+            if (word1.charAt(word1Index) == word2.charAt(word2Index)) {
+                last[word2Index] = word1Index;
+                word2Index--;
+            }
+        }
+        int[] result = new int[m];
+        // Whether we have already used our one allowed modification.
+        boolean usedChange = false;
+        word2Index = 0;
+        // Greedily choose the smallest possible index.
+        for (int word1Index = 0;
+             word1Index < n && word2Index < m;
+             word1Index++) {
+            char currentChar = word1.charAt(word1Index);
+            char requiredChar = word2.charAt(word2Index);
+
+            // Case 1: Characters already match.
+            boolean charactersMatch = currentChar == requiredChar;
+
+            // Case 2: We can use our one allowed modification.
+            //
+            // After changing word1[word1Index], we still need
+            // to match word2[word2Index + 1 ...].
+            //
+            // last[word2Index + 1] tells us where that remaining
+            // suffix can start.
+            boolean canUseChange =  !usedChange &&  (word2Index == m - 1 ||  word1Index < last[word2Index + 1]);
+            if (charactersMatch || canUseChange) {
+                result[word2Index] = word1Index;
+                // Mark that we used our one mismatch.
+                if (!charactersMatch) {
+                    usedChange = true;
+                }
+                word2Index++;
+            }
+        }
+        // We couldn't match all characters.
+        if (word2Index < m) {
+            return new int[0];
+        }
+
+        return result;
+    }
+}
