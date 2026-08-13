@@ -1,0 +1,113 @@
+You are given a 0-indexed string s. You are also given a 0-indexed string queryCharacters of length k and a 0-indexed array of integer indices queryIndices of length k, both of which are used to describe k queries.
+
+The ith query updates the character in s at index queryIndices[i] to the character queryCharacters[i].
+
+Return an array lengths of length k where lengths[i] is the length of the longest substring of s consisting of only one repeating character after the ith query is performed.
+
+ 
+
+Example 1:
+
+Input: s = "babacc", queryCharacters = "bcb", queryIndices = [1,3,3]
+Output: [3,3,4]
+Explanation: 
+- 1st query updates s = "bbbacc". The longest substring consisting of one repeating character is "bbb" with length 3.
+- 2nd query updates s = "bbbccc". 
+  The longest substring consisting of one repeating character can be "bbb" or "ccc" with length 3.
+- 3rd query updates s = "bbbbcc". The longest substring consisting of one repeating character is "bbbb" with length 4.
+Thus, we return [3,3,4].
+Example 2:
+
+Input: s = "abyzz", queryCharacters = "aa", queryIndices = [2,1]
+Output: [2,3]
+Explanation:
+- 1st query updates s = "abazz". The longest substring consisting of one repeating character is "zz" with length 2.
+- 2nd query updates s = "aaazz". The longest substring consisting of one repeating character is "aaa" with length 3.
+Thus, we return [2,3].
+ 
+
+Constraints:
+
+1 <= s.length <= 10^5
+s consists of lowercase English letters.
+k == queryCharacters.length == queryIndices.length
+1 <= k <= 10^5
+queryCharacters consists of lowercase English letters.
+0 <= queryIndices[i] < s.length
+
+Code : // O(n+k log n)
+
+class Solution {
+    private static class Node {
+        char leftChar, rightChar;
+        int prefix, suffix, max, len;
+        Node(char leftChar, char rightChar, int prefix, int suffix, int max, int len) {
+            this.leftChar = leftChar;
+            this.rightChar = rightChar;
+            this.prefix = prefix;
+            this.suffix = suffix;
+            this.max = max;
+            this.len = len;
+        }
+    }
+    private char[] arr;
+    private Node[] tree;
+    public int[] longestRepeating(String s, String queryCharacters, int[] queryIndices) {
+        int n = s.length();
+        arr = s.toCharArray();
+        tree = new Node[4 * n];
+        build(1, 0, n - 1);
+        int k = queryCharacters.length();
+        int[] ans = new int[k];
+        for (int i = 0; i < k; i++) {
+            update(1, 0, n - 1, queryIndices[i], queryCharacters.charAt(i));
+            ans[i] = tree[1].max;
+        }
+        return ans;
+    }
+
+    private void build(int node, int left, int right) {
+        if (left == right) {
+            tree[node] = new Node(arr[left], arr[left], 1, 1, 1, 1);
+            return;
+        }
+        int mid = left + (right - left) / 2;
+        build(node * 2, left, mid);
+        build(node * 2 + 1, mid + 1, right);
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    private void update(int node, int left, int right, int index, char ch) {
+        if (left == right) {
+            arr[index] = ch;
+            tree[node] = new Node(ch, ch, 1, 1, 1, 1);
+            return;
+        }
+        int mid = left + (right - left) / 2;
+        if (index <= mid) {
+            update(node * 2, left, mid, index, ch);
+        } else {
+            update(node * 2 + 1, mid + 1, right, index, ch);
+        }
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    private Node merge(Node a, Node b) {
+        int len = a.len + b.len;
+        char leftChar = a.leftChar;
+        char rightChar = b.rightChar;
+        int prefix = a.prefix;
+        if (a.prefix == a.len && a.rightChar == b.leftChar) {
+            prefix = a.len + b.prefix;
+        }
+        int suffix = b.suffix;
+        if (b.suffix == b.len && a.rightChar == b.leftChar) {
+            suffix = b.len + a.suffix;
+        }
+        int max = Math.max(a.max, b.max);
+        if (a.rightChar == b.leftChar) {
+            max = Math.max(max, a.suffix + b.prefix);
+        }
+        return new Node(leftChar, rightChar, prefix, suffix, max, len);
+    }
+}
