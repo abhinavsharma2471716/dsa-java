@@ -1,0 +1,644 @@
+There are several stones arranged in a row, and each stone has an associated value which is an integer given in the array stoneValue.
+
+In each round of the game, Alice divides the row into two non-empty rows (i.e. left row and right row), then Bob calculates the value of each row which is the sum of the values of all the stones in this row. Bob throws away the row which has the maximum value, and Alice's score increases by the value of the remaining row. If the value of the two rows are equal, Bob lets Alice decide which row will be thrown away. The next round starts with the remaining row.
+
+The game ends when there is only one stone remaining. Alice's score is initially zero.
+
+Return the maximum score that Alice can obtain.
+
+ 
+
+Example 1:
+
+Input: stoneValue = [6,2,3,4,5,5]
+Output: 18
+Explanation: In the first round, Alice divides the row to [6,2,3], [4,5,5]. The left row has the value 11 and the right row has value 14. Bob throws away the right row and Alice's score is now 11.
+In the second round Alice divides the row to [6], [2,3]. This time Bob throws away the left row and Alice's score becomes 16 (11 + 5).
+The last round Alice has only one choice to divide the row which is [2], [3]. Bob throws away the right row and Alice's score is now 18 (16 + 2). The game ends because only one stone is remaining in the row.
+Example 2:
+
+Input: stoneValue = [7,7,7,7,7,7,7]
+Output: 28
+Example 3:
+
+Input: stoneValue = [4]
+Output: 0
+ 
+
+Constraints:
+
+1 <= stoneValue.length <= 500
+1 <= stoneValue[i] <= 10^6
+
+Code: // O(n^3)
+
+class Solution {
+    public int stoneGameV(int[] stoneValue) {
+        int n = stoneValue.length;
+        // Prefix sum
+        int[] prefix = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + stoneValue[i];
+        }
+        // dp[l][r] = maximum score obtainable from stones l to r
+        int[][] dp = new int[n][n];
+        // len = length of current interval
+        for (int len = 2; len <= n; len++) {
+            for (int l = 0; l + len <= n; l++) {
+                int r = l + len - 1;
+                // Try every possible split
+                for (int k = l; k < r; k++) {
+                    int leftSum = prefix[k + 1] - prefix[l];
+                    int rightSum = prefix[r + 1] - prefix[k + 1];
+                    if (leftSum < rightSum) {
+                        dp[l][r] = Math.max(dp[l][r], leftSum + dp[l][k]);
+                    } else if (leftSum > rightSum) {
+                        dp[l][r] = Math.max(dp[l][r], rightSum + dp[k + 1][r]);
+                    } else {
+                        dp[l][r] = Math.max(dp[l][r], leftSum + Math.max(dp[l][k], dp[k + 1][r]));
+                    }
+                }
+            }
+        }
+        return dp[0][n - 1];
+    }
+}
+
+Bonus optimal solution:
+
+//O(n^2)
+
+class Solution {
+    public int stoneGameV(int[] stoneValue) {
+        int n = stoneValue.length;
+        int[] prefix = new int[n + 1];
+
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + stoneValue[i];
+        }
+
+        int[][] dp = new int[n][n];
+        int[][] maxLeft = new int[n][n];
+        int[][] maxRight = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            maxLeft[i][i] = stoneValue[i];
+            maxRight[i][i] = stoneValue[i];
+        }
+
+        for (int l = n - 2; l >= 0; l--) {
+            int mid = l;
+
+            for (int r = l + 1; r < n; r++) {
+
+                while (mid < r - 1 && getSum(prefix, l, mid) < getSum(prefix, mid + 1, r)) {
+                    mid++;
+                }
+
+                int best = 0;
+
+                if (mid > l) {
+                    best = Math.max(best, maxLeft[l][mid - 1]);
+                }
+
+                int leftSum = getSum(prefix, l, mid);
+                int rightSum = getSum(prefix, mid + 1, r);
+
+                if (leftSum < rightSum) {
+                    best = Math.max(best, leftSum + dp[l][mid]);
+                } else if (leftSum > rightSum) {
+                    best = Math.max(best, rightSum + dp[mid + 1][r]);
+                } else {
+                    best = Math.max(best, leftSum + Math.max(dp[l][mid], dp[mid + 1][r]));
+                }
+
+                if (mid + 2 <= r) {
+                    best = Math.max(best, maxRight[mid + 2][r]);
+                }
+
+                dp[l][r] = best;
+
+                int totalSum = getSum(prefix, l, r);
+                maxLeft[l][r] = Math.max(maxLeft[l][r - 1], totalSum + dp[l][r]);
+                maxRight[l][r] = Math.max(maxRight[l + 1][r], totalSum + dp[l][r]);
+            }
+        }
+
+        return dp[0][n - 1];
+    }
+
+    private int getSum(int[] prefix, int l, int r) {
+        return prefix[r + 1] - prefix[l];
+    }
+}
+
+Note:
+
+maxLeft[l][r]=
+maximum of:
+sum(l...k) + dp[l][k]
+for every k from l to r
+
+
+
+maxRight[l][r]=
+maximum of:
+sum(k...r) + dp[k][r]
+for every k from l to r
+
+
+
+Debug:
+
+Array: [6, 2, 3, 4, 5, 5]
+
+Base case:
+maxLeft[0][0] = 6
+maxRight[0][0] = 6
+
+Base case:
+maxLeft[1][1] = 2
+maxRight[1][1] = 2
+
+Base case:
+maxLeft[2][2] = 3
+maxRight[2][2] = 3
+
+Base case:
+maxLeft[3][3] = 4
+maxRight[3][3] = 4
+
+Base case:
+maxLeft[4][4] = 5
+maxRight[4][4] = 5
+
+Base case:
+maxLeft[5][5] = 5
+maxRight[5][5] = 5
+
+========================================
+Starting l = 4, value = 5
+========================================
+
+----------------------------------------
+Processing interval [4, 5]
+Current interval sum = 10
+Initial mid = 4
+----------------------------------------
+
+Final mid = 4
+
+BOUNDARY SPLIT:
+[4..4] | [5..5]
+leftSum = 5
+rightSum = 5
+leftSum == rightSum
+Candidate = 5 + max(0, 0) = 5
+best after boundary split = 5
+
+FINAL dp[4][5] = 5
+
+Updating helper arrays:
+totalSum = 10
+maxLeft[4][5] = max(5, 10 + 5) = 15
+maxRight[4][5] = max(5, 10 + 5) = 15
+========================================
+Starting l = 3, value = 4
+========================================
+
+----------------------------------------
+Processing interval [3, 4]
+Current interval sum = 9
+Initial mid = 3
+----------------------------------------
+
+Final mid = 3
+
+BOUNDARY SPLIT:
+[3..3] | [4..4]
+leftSum = 4
+rightSum = 5
+leftSum < rightSum
+Candidate = leftSum + dp[3][3]
+Candidate = 4 + 0 = 4
+best after boundary split = 4
+
+FINAL dp[3][4] = 4
+
+Updating helper arrays:
+totalSum = 9
+maxLeft[3][4] = max(4, 9 + 4) = 13
+maxRight[3][4] = max(5, 9 + 4) = 13
+
+----------------------------------------
+Processing interval [3, 5]
+Current interval sum = 14
+Initial mid = 3
+----------------------------------------
+mid = 3
+Left  [3..3] sum = 4
+Right [4..5] sum = 10
+4 < 10 -> move mid right
+
+Final mid = 4
+
+LEFT GROUP: splits k from 3 to 3
+Using maxLeft[3][3] = 4
+best = 4
+
+BOUNDARY SPLIT:
+[3..4] | [5..5]
+leftSum = 9
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[5][5]
+Candidate = 5 + 0 = 5
+best after boundary split = 5
+
+FINAL dp[3][5] = 5
+
+Updating helper arrays:
+totalSum = 14
+maxLeft[3][5] = max(13, 14 + 5) = 19
+maxRight[3][5] = max(15, 14 + 5) = 19
+========================================
+Starting l = 2, value = 3
+========================================
+
+----------------------------------------
+Processing interval [2, 3]
+Current interval sum = 7
+Initial mid = 2
+----------------------------------------
+
+Final mid = 2
+
+BOUNDARY SPLIT:
+[2..2] | [3..3]
+leftSum = 3
+rightSum = 4
+leftSum < rightSum
+Candidate = leftSum + dp[2][2]
+Candidate = 3 + 0 = 3
+best after boundary split = 3
+
+FINAL dp[2][3] = 3
+
+Updating helper arrays:
+totalSum = 7
+maxLeft[2][3] = max(3, 7 + 3) = 10
+maxRight[2][3] = max(4, 7 + 3) = 10
+
+----------------------------------------
+Processing interval [2, 4]
+Current interval sum = 12
+Initial mid = 2
+----------------------------------------
+mid = 2
+Left  [2..2] sum = 3
+Right [3..4] sum = 9
+3 < 9 -> move mid right
+
+Final mid = 3
+
+LEFT GROUP: splits k from 2 to 2
+Using maxLeft[2][2] = 3
+best = 3
+
+BOUNDARY SPLIT:
+[2..3] | [4..4]
+leftSum = 7
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[4][4]
+Candidate = 5 + 0 = 5
+best after boundary split = 5
+
+FINAL dp[2][4] = 5
+
+Updating helper arrays:
+totalSum = 12
+maxLeft[2][4] = max(10, 12 + 5) = 17
+maxRight[2][4] = max(13, 12 + 5) = 17
+
+----------------------------------------
+Processing interval [2, 5]
+Current interval sum = 17
+Initial mid = 3
+----------------------------------------
+mid = 3
+Left  [2..3] sum = 7
+Right [4..5] sum = 10
+7 < 10 -> move mid right
+
+Final mid = 4
+
+LEFT GROUP: splits k from 2 to 3
+Using maxLeft[2][3] = 10
+best = 10
+
+BOUNDARY SPLIT:
+[2..4] | [5..5]
+leftSum = 12
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[5][5]
+Candidate = 5 + 0 = 5
+best after boundary split = 10
+
+FINAL dp[2][5] = 10
+
+Updating helper arrays:
+totalSum = 17
+maxLeft[2][5] = max(17, 17 + 10) = 27
+maxRight[2][5] = max(19, 17 + 10) = 27
+========================================
+Starting l = 1, value = 2
+========================================
+
+----------------------------------------
+Processing interval [1, 2]
+Current interval sum = 5
+Initial mid = 1
+----------------------------------------
+
+Final mid = 1
+
+BOUNDARY SPLIT:
+[1..1] | [2..2]
+leftSum = 2
+rightSum = 3
+leftSum < rightSum
+Candidate = leftSum + dp[1][1]
+Candidate = 2 + 0 = 2
+best after boundary split = 2
+
+FINAL dp[1][2] = 2
+
+Updating helper arrays:
+totalSum = 5
+maxLeft[1][2] = max(2, 5 + 2) = 7
+maxRight[1][2] = max(3, 5 + 2) = 7
+
+----------------------------------------
+Processing interval [1, 3]
+Current interval sum = 9
+Initial mid = 1
+----------------------------------------
+mid = 1
+Left  [1..1] sum = 2
+Right [2..3] sum = 7
+2 < 7 -> move mid right
+
+Final mid = 2
+
+LEFT GROUP: splits k from 1 to 1
+Using maxLeft[1][1] = 2
+best = 2
+
+BOUNDARY SPLIT:
+[1..2] | [3..3]
+leftSum = 5
+rightSum = 4
+leftSum > rightSum
+Candidate = rightSum + dp[3][3]
+Candidate = 4 + 0 = 4
+best after boundary split = 4
+
+FINAL dp[1][3] = 4
+
+Updating helper arrays:
+totalSum = 9
+maxLeft[1][3] = max(7, 9 + 4) = 13
+maxRight[1][3] = max(10, 9 + 4) = 13
+
+----------------------------------------
+Processing interval [1, 4]
+Current interval sum = 14
+Initial mid = 2
+----------------------------------------
+mid = 2
+Left  [1..2] sum = 5
+Right [3..4] sum = 9
+5 < 9 -> move mid right
+
+Final mid = 3
+
+LEFT GROUP: splits k from 1 to 2
+Using maxLeft[1][2] = 7
+best = 7
+
+BOUNDARY SPLIT:
+[1..3] | [4..4]
+leftSum = 9
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[4][4]
+Candidate = 5 + 0 = 5
+best after boundary split = 7
+
+FINAL dp[1][4] = 7
+
+Updating helper arrays:
+totalSum = 14
+maxLeft[1][4] = max(13, 14 + 7) = 21
+maxRight[1][4] = max(17, 14 + 7) = 21
+
+----------------------------------------
+Processing interval [1, 5]
+Current interval sum = 19
+Initial mid = 3
+----------------------------------------
+mid = 3
+Left  [1..3] sum = 9
+Right [4..5] sum = 10
+9 < 10 -> move mid right
+
+Final mid = 4
+
+LEFT GROUP: splits k from 1 to 3
+Using maxLeft[1][3] = 13
+best = 13
+
+BOUNDARY SPLIT:
+[1..4] | [5..5]
+leftSum = 14
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[5][5]
+Candidate = 5 + 0 = 5
+best after boundary split = 13
+
+FINAL dp[1][5] = 13
+
+Updating helper arrays:
+totalSum = 19
+maxLeft[1][5] = max(21, 19 + 13) = 32
+maxRight[1][5] = max(27, 19 + 13) = 32
+========================================
+Starting l = 0, value = 6
+========================================
+
+----------------------------------------
+Processing interval [0, 1]
+Current interval sum = 8
+Initial mid = 0
+----------------------------------------
+
+Final mid = 0
+
+BOUNDARY SPLIT:
+[0..0] | [1..1]
+leftSum = 6
+rightSum = 2
+leftSum > rightSum
+Candidate = rightSum + dp[1][1]
+Candidate = 2 + 0 = 2
+best after boundary split = 2
+
+FINAL dp[0][1] = 2
+
+Updating helper arrays:
+totalSum = 8
+maxLeft[0][1] = max(6, 8 + 2) = 10
+maxRight[0][1] = max(2, 8 + 2) = 10
+
+----------------------------------------
+Processing interval [0, 2]
+Current interval sum = 11
+Initial mid = 0
+----------------------------------------
+
+Final mid = 0
+
+BOUNDARY SPLIT:
+[0..0] | [1..2]
+leftSum = 6
+rightSum = 5
+leftSum > rightSum
+Candidate = rightSum + dp[1][2]
+Candidate = 5 + 2 = 7
+best after boundary split = 7
+
+RIGHT GROUP: splits after mid
+Using maxRight[2][2] = 3
+best after right group = 7
+
+FINAL dp[0][2] = 7
+
+Updating helper arrays:
+totalSum = 11
+maxLeft[0][2] = max(10, 11 + 7) = 18
+maxRight[0][2] = max(7, 11 + 7) = 18
+
+----------------------------------------
+Processing interval [0, 3]
+Current interval sum = 15
+Initial mid = 0
+----------------------------------------
+mid = 0
+Left  [0..0] sum = 6
+Right [1..3] sum = 9
+6 < 9 -> move mid right
+
+Final mid = 1
+
+LEFT GROUP: splits k from 0 to 0
+Using maxLeft[0][0] = 6
+best = 6
+
+BOUNDARY SPLIT:
+[0..1] | [2..3]
+leftSum = 8
+rightSum = 7
+leftSum > rightSum
+Candidate = rightSum + dp[2][3]
+Candidate = 7 + 3 = 10
+best after boundary split = 10
+
+RIGHT GROUP: splits after mid
+Using maxRight[3][3] = 4
+best after right group = 10
+
+FINAL dp[0][3] = 10
+
+Updating helper arrays:
+totalSum = 15
+maxLeft[0][3] = max(18, 15 + 10) = 25
+maxRight[0][3] = max(13, 15 + 10) = 25
+
+----------------------------------------
+Processing interval [0, 4]
+Current interval sum = 20
+Initial mid = 1
+----------------------------------------
+mid = 1
+Left  [0..1] sum = 8
+Right [2..4] sum = 12
+8 < 12 -> move mid right
+
+Final mid = 2
+
+LEFT GROUP: splits k from 0 to 1
+Using maxLeft[0][1] = 10
+best = 10
+
+BOUNDARY SPLIT:
+[0..2] | [3..4]
+leftSum = 11
+rightSum = 9
+leftSum > rightSum
+Candidate = rightSum + dp[3][4]
+Candidate = 9 + 4 = 13
+best after boundary split = 13
+
+RIGHT GROUP: splits after mid
+Using maxRight[4][4] = 5
+best after right group = 13
+
+FINAL dp[0][4] = 13
+
+Updating helper arrays:
+totalSum = 20
+maxLeft[0][4] = max(25, 20 + 13) = 33
+maxRight[0][4] = max(21, 20 + 13) = 33
+
+----------------------------------------
+Processing interval [0, 5]
+Current interval sum = 25
+Initial mid = 2
+----------------------------------------
+mid = 2
+Left  [0..2] sum = 11
+Right [3..5] sum = 14
+11 < 14 -> move mid right
+
+Final mid = 3
+
+LEFT GROUP: splits k from 0 to 2
+Using maxLeft[0][2] = 18
+best = 18
+
+BOUNDARY SPLIT:
+[0..3] | [4..5]
+leftSum = 15
+rightSum = 10
+leftSum > rightSum
+Candidate = rightSum + dp[4][5]
+Candidate = 10 + 5 = 15
+best after boundary split = 18
+
+RIGHT GROUP: splits after mid
+Using maxRight[5][5] = 5
+best after right group = 18
+
+FINAL dp[0][5] = 18
+
+Updating helper arrays:
+totalSum = 25
+maxLeft[0][5] = max(33, 25 + 18) = 43
+maxRight[0][5] = max(32, 25 + 18) = 43
+
+========================================
+FINAL ANSWER = dp[0][5] = 18
+========================================
