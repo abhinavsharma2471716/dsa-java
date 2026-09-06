@@ -1,0 +1,120 @@
+Given two strings s and t, return the number of distinct subsequences of s which equals t.
+
+The test cases are generated so that the answer fits on a 32-bit signed integer.
+
+ 
+
+Example 1:
+
+Input: s = "rabbbit", t = "rabbit"
+Output: 3
+Explanation:
+As shown below, there are 3 ways you can generate "rabbit" from s.
+rabbbit
+rabbbit
+rabbbit
+Example 2:
+
+Input: s = "babgbag", t = "bag"
+Output: 5
+Explanation:
+As shown below, there are 5 ways you can generate "bag" from s.
+babgbag
+babgbag
+babgbag
+babgbag
+babgbag
+ 
+
+Constraints:
+
+1 <= s.length, t.length <= 1000
+s and t consist of English letters.
+
+Code: // O(m*n)
+
+Approach - 1:
+• Recursion + Memoization (Top-Down DP)
+
+class Solution {
+
+    int[][] memo;
+
+    public int numDistinct(String s, String t) {
+        int m = s.length();
+        int n = t.length();
+
+        memo = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                memo[i][j] = -1;
+            }
+        }
+
+        return solve(0, 0, s, t);
+    }
+
+    private int solve(int i, int j, String s, String t) {
+
+        // Successfully formed t
+        if (j == t.length()) {
+            return 1;
+        }
+
+        // s is exhausted
+        if (i == s.length()) {
+            return 0;
+        }
+
+        // Already calculated
+        if (memo[i][j] != -1) {
+            return memo[i][j];
+        }
+
+        // Characters don't match
+        if (s.charAt(i) != t.charAt(j)) {
+            return memo[i][j] = solve(i + 1, j, s, t);
+        }
+
+        // Characters match:
+        // 1. Take s[i]
+        // 2. Skip s[i]
+        return memo[i][j] =
+                solve(i + 1, j + 1, s, t)
+                + solve(i + 1, j, s, t);
+    }
+}
+
+Approach - 2:
+• Tabulation (Bottom-Up DP)
+
+class Solution {
+    public int numDistinct(String s, String t) {
+
+        int m = s.length();
+        int n = t.length();
+
+        // dp[i][j] = number of ways to form t[j...]
+        // using s[i...]
+
+        long[][] dp = new long[m + 1][n + 1];
+
+        for (int i = 0; i <= m; i++) {
+            dp[i][n] = 1;
+        }
+
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+
+                if (s.charAt(i) == t.charAt(j)) {
+
+                    dp[i][j] = dp[i + 1][j + 1] + dp[i + 1][j];
+                } else {
+                    dp[i][j] = dp[i + 1][j];
+                }
+            }
+        }
+        return (int) dp[0][0];
+    }
+}
