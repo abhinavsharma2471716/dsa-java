@@ -1,0 +1,147 @@
+You are given a 2D integer array intervals, where intervals[i] = [li, ri, weighti]. Interval i starts at position li and ends at ri, and has a weight of weighti. You can choose up to 4 non-overlapping intervals. The score of the chosen intervals is defined as the total sum of their weights.
+
+Return the lexicographically smallest array of at most 4 indices from intervals with maximum score, representing your choice of non-overlapping intervals.
+
+Two intervals are said to be non-overlapping if they do not share any points. In particular, intervals sharing a left or right boundary are considered overlapping.
+
+ 
+
+Example 1:
+
+Input: intervals = [[1,3,2],[4,5,2],[1,5,5],[6,9,3],[6,7,1],[8,9,1]]
+
+Output: [2,3]
+
+Explanation:
+
+You can choose the intervals with indices 2, and 3 with respective weights of 5, and 3.
+
+Example 2:
+
+Input: intervals = [[5,8,1],[6,7,7],[4,7,3],[9,10,6],[7,8,2],[11,14,3],[3,5,5]]
+
+Output: [1,3,5,6]
+
+Explanation:
+
+You can choose the intervals with indices 1, 3, 5, and 6 with respective weights of 7, 6, 3, and 5.
+
+ 
+
+Constraints:
+
+1 <= intevals.length <= 5 * 10^4
+intervals[i].length == 3
+intervals[i] = [li, ri, weighti]
+1 <= li <= ri <= 10^9
+1 <= weighti <= 10^9
+
+
+Code: // O(nlogn)
+
+class Solution {
+    int[][] arr;
+    int[] next;
+    Node[][] memo;
+
+    public int[] maximumWeight(List<List<Integer>> intervals) {
+        int n = intervals.size();
+        arr = new int[n][4];
+        for (int i = 0; i < n; i++) {
+            arr[i][0] = intervals.get(i).get(0); // left
+            arr[i][1] = intervals.get(i).get(1); // right
+            arr[i][2] = intervals.get(i).get(2); // weight
+            arr[i][3] = i; // original index
+        }
+        // Sort by starting position
+        Arrays.sort(arr, (a, b) -> {
+            if (a[0] != b[0])
+                return Integer.compare(a[0], b[0]);
+
+            return Integer.compare(a[1], b[1]);
+        });
+
+        // Find next non-overlapping interval
+        next = new int[n];
+        for (int i = 0; i < n; i++) {
+            int low = i + 1;
+            int high = n;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid][0] > arr[i][1])
+                    high = mid;
+                else
+                    low = mid + 1;
+            }
+            next[i] = low;
+        }
+
+        memo = new Node[n][5];
+        Node answer = solve(0, 4);
+        Collections.sort(answer.indices);
+        return answer.indices.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
+    }
+
+    private Node solve(int i, int k) {
+
+        // No more intervals or selections
+        if (i == arr.length || k == 0) {
+            return new Node(0, new ArrayList<>());
+        }
+
+        if (memo[i][k] != null)
+            return memo[i][k];
+
+        // Choice 1: Skip current interval
+        Node skip = solve(i + 1, k);
+
+        // Choice 2: Take current interval
+        Node nextResult = solve(next[i], k - 1);
+
+        List<Integer> takeIndices = new ArrayList<>();
+        takeIndices.add(arr[i][3]);
+        takeIndices.addAll(nextResult.indices);
+
+        Node take = new Node(
+                arr[i][2] + nextResult.score,
+                takeIndices);
+
+        // Choose better answer
+        memo[i][k] = better(skip, take);
+
+        return memo[i][k];
+    }
+
+    private Node better(Node a, Node b) {
+
+        if (a.score != b.score)
+            return a.score > b.score ? a : b;
+
+        // Same score -> lexicographically smaller indices
+        List<Integer> x = new ArrayList<>(a.indices);
+        List<Integer> y = new ArrayList<>(b.indices);
+
+        Collections.sort(x);
+        Collections.sort(y);
+
+        for (int i = 0; i < Math.min(x.size(), y.size()); i++) {
+            if (!x.get(i).equals(y.get(i)))
+                return x.get(i) < y.get(i) ? a : b;
+        }
+
+        return x.size() <= y.size() ? a : b;
+    }
+
+    static class Node {
+
+        long score;
+        List<Integer> indices;
+
+        Node(long score, List<Integer> indices) {
+            this.score = score;
+            this.indices = indices;
+        }
+    }
+}
