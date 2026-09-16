@@ -1,0 +1,129 @@
+Given n points on a 1-D plane, where the ith point (from 0 to n-1) is at x = i, find the number of ways we can draw exactly k non-overlapping line segments such that each segment covers two or more points. The endpoints of each segment must have integral coordinates. The k line segments do not have to cover all n points, and they are allowed to share endpoints.
+
+Return the number of ways we can draw k non-overlapping line segments. Since this number can be huge, return it modulo 109 + 7.
+
+ 
+
+Example 1:
+
+
+Input: n = 4, k = 2
+Output: 5
+Explanation: The two line segments are shown in red and blue.
+The image above shows the 5 different ways {(0,2),(2,3)}, {(0,1),(1,3)}, {(0,1),(2,3)}, {(1,2),(2,3)}, {(0,1),(1,2)}.
+Example 2:
+
+Input: n = 3, k = 1
+Output: 3
+Explanation: The 3 ways are {(0,1)}, {(0,2)}, {(1,2)}.
+Example 3:
+
+Input: n = 30, k = 7
+Output: 796297179
+Explanation: The total number of possible ways to draw 7 line segments is 3796297200. Taking this number modulo 109 + 7 gives us 796297179.
+ 
+
+Constraints:
+
+2 <= n <= 1000
+1 <= k <= n-1
+
+Code:
+
+Appraoch 1: Time: O(n² × k)
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+    private int[][] memo = new int[1001][1001];
+
+    private int dfs(int n, int segments, int pos) {
+        if (segments == 0) {
+            return 1;
+        }
+
+        if (pos >= n) {
+            return 0;
+        }
+
+        if (memo[segments][pos] != -1) {
+            return memo[segments][pos];
+        }
+
+        long ways = 0;
+
+        // Choose the second endpoint of the current segment.
+        for (int end = pos + 1; end < n; end++) {
+            ways += dfs(n, segments - 1, end);
+            ways %= MOD;
+        }
+
+        // Leave the current point unused.
+        ways += dfs(n, segments, pos + 1);
+        ways %= MOD;
+
+        return memo[segments][pos] = (int) ways;
+    }
+
+    public int numberOfSets(int n, int k) {
+        for (int[] row : memo) {
+            Arrays.fill(row, -1);
+        }
+
+        return dfs(n, k, 0);
+    }
+}
+
+Approach 2: Time: O(n² × k)
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+    public int numberOfSets(int n, int k) {
+        int[][] dp = new int[k + 1][n + 1];
+        // If we need 0 segments, there is always 1 way.
+        for (int pos = 0; pos <= n; pos++) {
+            dp[0][pos] = 1;
+        }
+        for (int segments = 1; segments <= k; segments++) {
+            for (int pos = n - 1; pos >= 0; pos--) {
+                long ways = dp[segments][pos + 1];
+              // Start a segment at pos and choose its ending point.
+                for (int end = pos + 1; end < n; end++) {
+                    ways += dp[segments - 1][end];
+                    ways %= MOD;
+                }
+                dp[segments][pos] = (int) ways;
+            }
+        }
+        return dp[k][0];
+    }
+}
+
+Approach 3: Time: O(n × k)
+
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+    public int numberOfSets(int n, int k) {
+        int[][] dp = new int[k + 1][n + 1];
+        // 0 segments can always be formed in exactly 1 way.
+        for (int pos = 0; pos <= n; pos++) {
+            dp[0][pos] = 1;
+        }
+        for (int segments = 1; segments <= k; segments++) {
+            int[] prevRowSum = new int[n + 1];
+            // Sum of dp[segments - 1][pos ... n - 1]
+            for (int pos = n - 1; pos >= 0; pos--) {
+                prevRowSum[pos] =  (int) ((prevRowSum[pos + 1] + dp[segments - 1][pos]) % MOD);
+            }
+            for (int pos = n - 1; pos >= 0; pos--) {
+                // Skip current point.
+                long ways = dp[segments][pos + 1];
+                // Start a segment at pos.
+                // End can be pos + 1 ... n - 1.
+                ways += prevRowSum[pos + 1];
+                dp[segments][pos] = (int) (ways % MOD);
+            }
+        }
+        return dp[k][0];
+    }
+}
