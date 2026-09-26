@@ -36,8 +36,8 @@ Notice that the "a"s not in a bracket pair are not evaluated.
 
 Constraints:
 
-1 <= s.length <= 105
-0 <= knowledge.length <= 105
+1 <= s.length <= 10^5
+0 <= knowledge.length <= 10^5
 knowledge[i].length == 2
 1 <= keyi.length, valuei.length <= 10
 s consists of lowercase English letters and round brackets '(' and ')'.
