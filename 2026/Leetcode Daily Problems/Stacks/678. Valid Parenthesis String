@@ -1,0 +1,98 @@
+Given a string s containing only three types of characters: '(', ')' and '*', return true if s is valid.
+
+The following rules define a valid string:
+
+Any left parenthesis '(' must have a corresponding right parenthesis ')'.
+Any right parenthesis ')' must have a corresponding left parenthesis '('.
+Left parenthesis '(' must go before the corresponding right parenthesis ')'.
+'*' could be treated as a single right parenthesis ')' or a single left parenthesis '(' or an empty string "".
+ 
+
+Example 1:
+
+Input: s = "()"
+Output: true
+Example 2:
+
+Input: s = "(*)"
+Output: true
+Example 3:
+
+Input: s = "(*))"
+Output: true
+Example 4:
+
+Input: s = "("
+Output: false
+ 
+
+Constraints:
+
+1 <= s.length <= 100
+s[i] is '(', ')' or '*'.
+
+Code:
+
+Approach 1: Two Stacks - O(n)
+
+class Solution {
+    public boolean checkValidString(String s) {
+        Stack<Integer> leftParentheses = new Stack<>();
+        Stack<Integer> stars = new Stack<>();
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                leftParentheses.push(i);
+            } else if (c == '*') {
+                stars.push(i);
+            } else if (c == ')') {
+                if (!leftParentheses.isEmpty()) {
+                    leftParentheses.pop();
+                } else if (!stars.isEmpty()) {
+                    stars.pop();
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        while (!leftParentheses.isEmpty() && !stars.isEmpty()) {
+            if (leftParentheses.peek() < stars.peek()) {
+                leftParentheses.pop();
+                stars.pop();
+            } else {
+                stars.pop();
+            }
+        }
+
+        return leftParentheses.isEmpty();
+    }
+}
+
+
+Approach 2: Greedy Range / Min-Max Balance - O(n)
+
+class Solution {
+    public boolean checkValidString(String s) {
+        int mino=0,maxo=0;
+        for(int i=0;i<s.length();i++){
+            char c = s.charAt(i);
+            if(c=='('){
+                mino++;
+                maxo++;
+            }else if(c==')'){
+                mino--;
+                maxo--;
+            }else{
+                maxo++;
+                mino--;
+            }
+            if(maxo<0){
+                return false;
+            }
+            mino=Math.max(0,mino);
+        }
+        return mino==0;
+    }
+}
