@@ -1,0 +1,116 @@
+You are given an integer array nums of length n.
+
+An integer k is called sortable if k divides n and you can sort nums in non-decreasing order by sequentially performing the following operations:
+
+Partition nums into consecutive subarrays of length k.
+Cyclically rotate each subarray independently any number of times to the left or to the right.
+Return an integer denoting the sum of all possible sortable integers k.
+
+ 
+
+Example 1:
+
+Input: nums = [3,1,2]
+
+Output: 3
+
+Explanation:​​​​​​​
+
+For n = 3, possible divisors are 1 and 3.
+For k = 1: each subarray has one element. No rotation can sort the array.
+For k = 3: the single subarray [3, 1, 2] can be rotated once to produce [1, 2, 3], which is sorted.
+Only k = 3 is sortable. Hence, the answer is 3.
+Example 2:
+
+Input: nums = [7,6,5]
+
+Output: 0
+
+Explanation:
+
+For n = 3, possible divisors are 1 and 3.
+For k = 1: each subarray has one element. No rotation can sort the array.
+For k = 3: the single subarray [7, 6, 5] cannot be rotated into non-decreasing order.
+No k is sortable. Hence, the answer is 0.
+Example 3:
+
+Input: nums = [5,8]
+
+Output: 3
+
+Explanation:​​​​​​​
+
+For n = 2, possible divisors are 1 and 2.
+Since [5, 8] is already sorted, every divisor is sortable. Hence, the answer is 1 + 2 = 3.
+ 
+
+Constraints:
+
+1 <= n == nums.length <= 10^5
+1 <= nums[i] <= 10^5
+
+
+Code:
+
+/*
+
+Time Complexity: O(n * tau(n))
+
+The outer loop checks all n possible values of k. For each valid divisor of n, the inner loops scan at most n array elements. 
+Since tau(n) is the number of divisors of n, the total time complexity is O(n * tau(n)).
+
+*/
+
+class Solution {
+    public int sortableIntegers(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+
+        for (int k = 1; k <= n; k++) {
+            if (n % k != 0) {
+                continue;
+            }
+
+            boolean valid = true;
+            int prevMax = Integer.MIN_VALUE;
+
+            for (int start = 0; start < n; start += k) {
+                int end = start + k;
+                int min = Integer.MAX_VALUE;
+                int max = Integer.MIN_VALUE;
+                int descents = 0;
+
+                for (int i = start; i < end; i++) {
+                    min = Math.min(min, nums[i]);
+                    max = Math.max(max, nums[i]);
+
+                    int next = (i + 1 == end) ? start : i + 1;
+                    if (nums[i] > nums[next]) {
+                        descents++;
+                    }
+                }
+
+                // This block must be sortable by cyclic rotation.
+                if (descents > 1) {
+                    valid = false;
+                    break;
+                }
+
+                // Blocks must remain sorted relative to each other.
+                if (prevMax > min) {
+                    valid = false;
+                    break;
+                }
+
+                prevMax = max;
+            }
+
+            if (valid) {
+                ans += k;
+            }
+        }
+
+        return ans;
+    }
+}
+
