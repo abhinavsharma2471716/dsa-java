@@ -1,0 +1,115 @@
+You are given an array nums of n integers and an integer k.
+
+For each subarray of nums, you can apply up to k operations on it. In each operation, you increment any element of the subarray by 1.
+
+Note that each subarray is considered independently, meaning changes made to one subarray do not persist to another.
+
+Return the number of subarrays that you can make non-decreasing ​​​​​after performing at most k operations.
+
+An array is said to be non-decreasing if each element is greater than or equal to its previous element, if it exists.
+
+ 
+
+Example 1:
+
+Input: nums = [6,3,1,2,4,4], k = 7
+
+Output: 17
+
+Explanation:
+
+Out of all 21 possible subarrays of nums, only the subarrays [6, 3, 1], [6, 3, 1, 2], [6, 3, 1, 2, 4] and [6, 3, 1, 2, 4, 4] cannot be made non-decreasing after applying up to k = 7 operations. Thus, the number of non-decreasing subarrays is 21 - 4 = 17.
+
+Example 2:
+
+Input: nums = [6,3,1,3,6], k = 4
+
+Output: 12
+
+Explanation:
+
+The subarray [3, 1, 3, 6] along with all subarrays of nums with three or fewer elements, except [6, 3, 1], can be made non-decreasing after k operations. There are 5 subarrays of a single element, 4 subarrays of two elements, and 2 subarrays of three elements except [6, 3, 1], so there are 1 + 5 + 4 + 2 = 12 subarrays that can be made non-decreasing.
+
+ 
+
+Constraints:
+
+1 <= nums.length <= 10^5
+1 <= nums[i] <= 10^9
+1 <= k <= 10^9
+
+Code: // O(n log n)
+
+
+class Solution {
+
+    public long countNonDecreasingSubarrays(int[] nums, int k) {
+        int n = nums.length;
+        long ans = 0;
+        long operations = 0;
+
+        // Max heap to track the maximum element in the window
+        PriorityQueue<int[]> pq = new PriorityQueue<>(
+            (a, b) -> Integer.compare(b[0], a[0])
+        );
+
+        // Store indices affected by removing each element
+        List<List<Integer>> count = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            count.add(new ArrayList<>());
+        }
+
+        // Next index containing a greater or equal element
+        int[] nextGreater = new int[n];
+        Arrays.fill(nextGreater, n);
+
+        // Monotonic decreasing stack
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int left = 0, right = 0; right < n; right++) {
+
+            // Update next greater positions
+            while (!stack.isEmpty() &&
+                   nums[right] >= nums[stack.peek()]) {
+
+                nextGreater[stack.peek()] = right;
+                stack.pop();
+            }
+
+            // Store the current index under its nearest greater element
+            if (!stack.isEmpty()) {
+                count.get(stack.peek()).add(right);
+            }
+
+            stack.push(right);
+
+            // Add the current element to the priority queue
+            pq.offer(new int[] {nums[right], right});
+
+            // Update the required increment operations
+            operations += Math.max(0, pq.peek()[0] - nums[right]);
+
+            // Shrink the window if operations exceed k
+            while (operations > k) {
+
+                for (int i : count.get(left)) {
+                    operations -= (long) (nums[left] - nums[i])
+                        * (Math.min(nextGreater[i], right + 1) - i);
+                }
+
+                left++;
+            }
+
+            // Remove elements outside the current window
+            while (!pq.isEmpty() && pq.peek()[1] < left) {
+                pq.poll();
+            }
+
+            // Count valid subarrays ending at right
+            ans += right - left + 1;
+        }
+
+        return ans;
+    }
+}
