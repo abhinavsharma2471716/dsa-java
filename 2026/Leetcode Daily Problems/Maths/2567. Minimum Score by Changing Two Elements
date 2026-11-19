@@ -1,0 +1,106 @@
+You are given an integer array nums.
+
+The low score of nums is the minimum absolute difference between any two integers.
+The high score of nums is the maximum absolute difference between any two integers.
+The score of nums is the sum of the high and low scores.
+Return the minimum score after changing two elements of nums.
+
+ 
+
+Example 1:
+
+Input: nums = [1,4,7,8,5]
+
+Output: 3
+
+Explanation:
+
+Change nums[0] and nums[1] to be 6 so that nums becomes [6,6,7,8,5].
+The low score is the minimum absolute difference: |6 - 6| = 0.
+The high score is the maximum absolute difference: |8 - 5| = 3.
+The sum of high and low score is 3.
+Example 2:
+
+Input: nums = [1,4,3]
+
+Output: 0
+
+Explanation:
+
+Change nums[1] and nums[2] to 1 so that nums becomes [1,1,1].
+The sum of maximum absolute difference and minimum absolute difference is 0.
+ 
+
+Constraints:
+
+3 <= nums.length <= 10^5
+1 <= nums[i] <= 10^9
+
+Code:
+
+Approach 1: // O(n log n)
+
+
+class Solution {
+    public int minimizeSum(int[] nums) {
+        int n = nums.length;
+
+        Arrays.sort(nums);
+
+        // Case 1: Change the two largest elements
+        int ans = nums[n - 3] - nums[0];
+
+        // Case 2: Change the smallest and largest elements
+        ans = Math.min(ans, nums[n - 2] - nums[1]);
+
+        // Case 3: Change the two smallest elements
+        ans = Math.min(ans, nums[n - 1] - nums[2]);
+
+        return ans;
+    }
+}
+
+Approach 2: // O(n)
+
+class Solution {
+    public int minimizeSum(int[] nums) {
+        int min1 = Integer.MAX_VALUE;
+        int min2 = Integer.MAX_VALUE;
+        int min3 = Integer.MAX_VALUE;
+        int max1 = Integer.MIN_VALUE;
+        int max2 = Integer.MIN_VALUE;
+        int max3 = Integer.MIN_VALUE;
+        // Find three smallest and three largest elements
+        for (int num : nums) {
+            if (num < min1) {
+                min3 = min2;
+                min2 = min1;
+                min1 = num;
+            } else if (num < min2) {
+                min3 = min2;
+                min2 = num;
+            } else if (num < min3) {
+                min3 = num;
+            }
+            if (num > max1) {
+                max3 = max2;
+                max2 = max1;
+                max1 = num;
+            } else if (num > max2) {
+                max3 = max2;
+                max2 = num;
+            } else if (num > max3) {
+                max3 = num;
+            }
+        }
+        // Case 1: Change the two largest elements
+        int ans = max3 - min1;
+        // Case 2: Change the smallest and largest elements
+        ans = Math.min(ans, max2 - min2);
+        // Case 3: Change the two smallest elements
+        ans = Math.min(ans, max1 - min3);
+        return ans;
+    }
+}
+
+ 
